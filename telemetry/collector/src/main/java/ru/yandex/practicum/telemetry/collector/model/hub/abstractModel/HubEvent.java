@@ -1,11 +1,11 @@
-package model.hub.abstractModel;
+package ru.yandex.practicum.telemetry.collector.model.hub.abstractModel;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import model.hub.*;
+import ru.yandex.practicum.telemetry.collector.model.hub.*;
 
 import java.time.Instant;
 
@@ -20,7 +20,7 @@ import java.time.Instant;
         @JsonSubTypes.Type(value = DeviceAddedEvent.class, name = "DEVICE_ADDED"),
         @JsonSubTypes.Type(value = DeviceRemovedEvent.class, name = "DEVICE_REMOVED"),
         @JsonSubTypes.Type(value = ScenarioAddedEvent.class, name = "SCENARIO_ADDED"),
-        @JsonSubTypes.Type(value = ScenarioRemovedEvent.class, name = "SCENARIO_REMOVED"),
+        @JsonSubTypes.Type(value = ScenarioRemovedEvent.class, name = "SCENARIO_REMOVED")
 })
 @Getter
 @Setter

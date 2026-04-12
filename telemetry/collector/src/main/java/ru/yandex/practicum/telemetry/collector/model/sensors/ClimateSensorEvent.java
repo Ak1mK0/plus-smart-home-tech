@@ -1,10 +1,10 @@
-package model.sensors;
+package ru.yandex.practicum.telemetry.collector.model.sensors;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import model.sensors.abstractModel.SensorEvent;
-import model.sensors.abstractModel.SensorEventType;
+import ru.yandex.practicum.telemetry.collector.model.sensors.abstractModel.SensorEvent;
+import ru.yandex.practicum.telemetry.collector.model.sensors.abstractModel.SensorEventType;
 
 @Getter
 @Setter

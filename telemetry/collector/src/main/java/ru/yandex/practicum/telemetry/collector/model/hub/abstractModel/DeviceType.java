@@ -1,4 +1,4 @@
-package model.hub.abstractModel;
+package ru.yandex.practicum.telemetry.collector.model.hub.abstractModel;
 
 public enum DeviceType {
     MOTION_SENSOR,
