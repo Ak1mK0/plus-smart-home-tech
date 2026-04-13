@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.avro.specific.SpecificRecordBase;
 import ru.yandex.practicum.telemetry.collector.model.hub.*;
 
 import java.time.Instant;
@@ -30,4 +31,8 @@ public abstract class HubEvent {
     private Instant timestamp = Instant.now();
 
     public abstract HubEventType getType();
+
+    public SpecificRecordBase toAvro() {
+        return null;
+    }
 }

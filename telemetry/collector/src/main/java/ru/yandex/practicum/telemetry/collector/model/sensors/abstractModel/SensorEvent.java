@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.avro.specific.SpecificRecordBase;
 import ru.yandex.practicum.telemetry.collector.model.sensors.*;
 
 import java.time.Instant;
@@ -31,4 +32,8 @@ public abstract class SensorEvent {
     private Instant timestamp = Instant.now();
 
     public abstract SensorEventType getType();
+
+    public SpecificRecordBase toAvro() {
+        return null;
+    }
 }
