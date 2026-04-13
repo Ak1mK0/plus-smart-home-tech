@@ -3,9 +3,8 @@ package ru.yandex.practicum.telemetry.collector.model.hub;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.apache.avro.specific.SpecificRecordBase;
-import ru.yandex.practicum.kafka.telemetry.event.ScenarioRemovedEventAvro;
 import ru.yandex.practicum.telemetry.collector.model.hub.abstractModel.HubEvent;
+import ru.yandex.practicum.telemetry.collector.model.hub.abstractModel.HubEventType;
 
 @Getter
 @Setter
@@ -16,12 +15,5 @@ public class ScenarioRemovedEvent extends HubEvent {
     @Override
     public HubEventType getType() {
         return HubEventType.SCENARIO_REMOVED;
-    }
-
-    @Override
-    public SpecificRecordBase toAvro() {
-        return ScenarioRemovedEventAvro.newBuilder()
-                .setName(getName())
-                .build();
     }
 }

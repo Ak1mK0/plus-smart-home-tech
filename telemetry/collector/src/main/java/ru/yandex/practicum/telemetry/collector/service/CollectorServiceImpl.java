@@ -6,7 +6,12 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
+import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
+import ru.yandex.practicum.telemetry.collector.mapper.HubEventMapper;
+import ru.yandex.practicum.telemetry.collector.mapper.SensorEventMapper;
 import ru.yandex.practicum.telemetry.collector.model.hub.abstractModel.HubEvent;
 import ru.yandex.practicum.telemetry.collector.model.sensors.abstractModel.SensorEvent;
 
@@ -16,23 +21,29 @@ import java.util.Properties;
 @Slf4j
 public class CollectorServiceImpl implements CollectorService {
 
-    private Producer<String, SpecificRecordBase> producer;
+    private final Producer<String, SpecificRecordBase> producer;
+    private final SensorEventMapper sensorEventMapper;
+    private final HubEventMapper hubEventMapper;
 
-    public CollectorServiceImpl() {
+    @Autowired
+    public CollectorServiceImpl(SensorEventMapper sensorEventMapper,
+                                HubEventMapper hubEventMapper) {
+        this.sensorEventMapper = sensorEventMapper;
+        this.hubEventMapper = hubEventMapper;
         this.producer = initProducer();
         log.info("Created default Kafka producer");
     }
 
     public void saveSensorEvent(SensorEvent sensorEvent) {
-        SpecificRecordBase data = sensorEvent.toAvro();
-        log.debug("{}: {}", sensorEvent.getClass().getSimpleName(), data);
-        producer.send(new ProducerRecord<>("telemetry.sensors.v1", sensorEvent.getClass().getSimpleName(), data));
+        SensorEventAvro avro = sensorEventMapper.toAvro(sensorEvent);
+        log.debug("Sending sensor event: {}", avro);
+        producer.send(new ProducerRecord<>("telemetry.sensors.v1", sensorEvent.getHubId(), avro));
     }
 
     public void saveHubEvent(HubEvent hubEvent) {
-        SpecificRecordBase data = hubEvent.toAvro();
-        log.debug("{}: {}", hubEvent.getClass().getSimpleName(), data);
-        producer.send(new ProducerRecord<>("telemetry.hubs.v1", hubEvent.getClass().getSimpleName(), data));
+        HubEventAvro avro = hubEventMapper.toAvro(hubEvent);
+        log.debug("Sending hub event: {}", avro);
+        producer.send(new ProducerRecord<>("telemetry.hubs.v1", hubEvent.getHubId(), avro));
     }
 
     private Producer<String, SpecificRecordBase> initProducer() {

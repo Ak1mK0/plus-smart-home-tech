@@ -3,8 +3,6 @@ package ru.yandex.practicum.telemetry.collector.model.sensors;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.apache.avro.specific.SpecificRecordBase;
-import ru.yandex.practicum.kafka.telemetry.event.ClimateSensorAvro;
 import ru.yandex.practicum.telemetry.collector.model.sensors.abstractModel.SensorEvent;
 import ru.yandex.practicum.telemetry.collector.model.sensors.abstractModel.SensorEventType;
 
@@ -22,14 +20,5 @@ public class ClimateSensorEvent extends SensorEvent {
     @Override
     public SensorEventType getType() {
         return SensorEventType.CLIMATE_SENSOR_EVENT;
-    }
-
-    @Override
-    public SpecificRecordBase toAvro() {
-        return ClimateSensorAvro.newBuilder()
-                .setTemperatureC(getTemperatureC())
-                .setHumidity(getHumidity())
-                .setCo2Level(getCo2Level())
-                .build();
     }
 } 
