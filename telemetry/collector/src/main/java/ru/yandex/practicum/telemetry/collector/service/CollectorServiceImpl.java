@@ -15,11 +15,12 @@ import ru.yandex.practicum.telemetry.collector.mapper.SensorEventMapper;
 import ru.yandex.practicum.telemetry.collector.model.hub.abstractModel.HubEvent;
 import ru.yandex.practicum.telemetry.collector.model.sensors.abstractModel.SensorEvent;
 
+import java.time.Duration;
 import java.util.Properties;
 
 @Service
 @Slf4j
-public class CollectorServiceImpl implements CollectorService {
+public class CollectorServiceImpl implements CollectorService, AutoCloseable {
 
     private final Producer<String, SpecificRecordBase> producer;
     private final SensorEventMapper sensorEventMapper;
@@ -53,5 +54,11 @@ public class CollectorServiceImpl implements CollectorService {
         config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "ru.yandex.practicum.telemetry.collector.service.AvroSerializer");
 
         return new KafkaProducer<>(config);
+    }
+
+    @Override
+    public void close() {
+        producer.flush();
+        producer.close(Duration.ofSeconds(10));
     }
 }
