@@ -39,14 +39,12 @@ public class CollectorServiceImpl implements CollectorService, AutoCloseable {
         SensorEventAvro avro = sensorEventMapper.toAvro(sensorEvent);
         log.debug("Sending sensor event: {}", avro);
         producer.send(new ProducerRecord<>("telemetry.sensors.v1", sensorEvent.getHubId(), avro));
-        producer.close();
     }
 
     public void saveHubEvent(HubEvent hubEvent) {
         HubEventAvro avro = hubEventMapper.toAvro(hubEvent);
         log.debug("Sending hub event: {}", avro);
         producer.send(new ProducerRecord<>("telemetry.hubs.v1", hubEvent.getHubId(), avro));
-        producer.close();
     }
 
     private Producer<String, SpecificRecordBase> initProducer() {
