@@ -17,6 +17,7 @@ message SensorEvent {
         LightSensorProto light_sensor = 6;
         ClimateSensorProto climate_sensor = 7;
         SwitchSensorProto switch_sensor = 8;
+      }
 }
 
 message MotionSensorProto {
