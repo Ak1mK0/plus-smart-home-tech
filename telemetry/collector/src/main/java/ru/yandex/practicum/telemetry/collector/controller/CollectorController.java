@@ -6,6 +6,7 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
+import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -27,7 +28,7 @@ public class CollectorController extends CollectorControllerGrpc.CollectorContro
 
     private final Map<SensorEventProto.PayloadCase, SensorEventHandler> sensorEventHandlerMap;
     private final Map<HubEventProto.PayloadCase, HubEventHandler> hubEventHandlerMap;
-    private final Producer<String, byte[]> producer;
+    private final Producer<String, SpecificRecordBase> producer;
 
     public CollectorController(Set<SensorEventHandler> sensorEventHandlerSet,
                                Set<HubEventHandler> hubEventHandlerSet) {
@@ -76,11 +77,11 @@ public class CollectorController extends CollectorControllerGrpc.CollectorContro
         }
     }
 
-    private Producer<String, byte[]> initProducer() {
+    private Producer<String, SpecificRecordBase> initProducer() {
         Properties config = new Properties();
         config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
-        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer");
+        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "serializer.AvroSerializer");
 
         return new KafkaProducer<>(config);
     }
