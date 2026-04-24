@@ -22,13 +22,18 @@
             <artifactId>grpc-protobuf</artifactId>
         </dependency>
 
-        <!-- Until gRPC generator library moves to generated jakarta instead of javax -->
-        <!-- https://github.com/grpc/grpc-java/issues/9179 -->
         <dependency>
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
             <version>1.3.5</version>
             <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.23.4</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 
@@ -42,9 +47,8 @@
             <plugin>
                 <groupId>io.github.ascopes</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
-
                 <configuration>
-                    <protocVersion>${protobuf.version}</protocVersion>
+                    <protocVersion>3.23.4</protocVersion>
 
                     <binaryMavenPlugins>
                         <binaryMavenPlugin>
@@ -67,7 +71,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>3.6.0</version>
                 <executions>
                     <execution>
                         <id>add-source</id>
