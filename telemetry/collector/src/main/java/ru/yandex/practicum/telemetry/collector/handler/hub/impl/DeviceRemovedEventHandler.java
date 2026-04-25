@@ -1,15 +1,19 @@
 package ru.yandex.practicum.telemetry.collector.handler.hub.impl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.stereotype.Component;
-import telemetry.service.event.HubEventProto;
+import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 import ru.yandex.practicum.telemetry.collector.handler.hub.HubEventHandler;
+import ru.yandex.practicum.telemetry.collector.mapper.HubEventMapper;
+import telemetry.service.event.HubEventProto;
 
 @Slf4j
 @Component
 public class DeviceRemovedEventHandler implements HubEventHandler {
+    HubEventMapper mapper = new HubEventMapper();
 
     @Override
     public HubEventProto.PayloadCase getMessageType() {
@@ -17,19 +21,9 @@ public class DeviceRemovedEventHandler implements HubEventHandler {
     }
 
     @Override
-    public void handle(HubEventProto event, Producer<String, byte[]> producer) {
-        log.debug("DeviceRemovedEventHandler request = {}", event);
-        ProducerRecord<String, byte[]> record = new ProducerRecord<>(
-                "telemetry.hubs.v1",
-                event.getHubId(),
-                event.toByteArray()
-        );
-        try {
-            producer.send(record).get(); // ждем подтверждения
-            log.info("Message sent successfully");
-        } catch (Exception e) {
-            log.error("Failed to send message", e);
-            throw new RuntimeException(e);
-        }
+    public void handle(HubEventProto event, Producer<String, SpecificRecordBase> producer) {
+        HubEventAvro avro = mapper.toAvro(event);
+        log.debug("avro request = {}", avro);
+        producer.send(new ProducerRecord<>("telemetry.hubs.v1", avro.getHubId(), avro));
     }
 }
