@@ -13,6 +13,7 @@ import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
 import ru.yandex.practicum.telemetry.aggregator.clients.Client;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,30 +69,48 @@ public class AggregationStarter {
             snapshotsAvro.put(avro.getHubId(), snapshot);
 
             return Optional.of(snapshot);
+        }
 
-        } else {
-            SensorsSnapshotAvro existingSnapshot = snapshotsAvro.get(avro.getHubId());
+        SensorsSnapshotAvro existingSnapshot = snapshotsAvro.get(avro.getHubId());
+        Map<String, SensorStateAvro> currentStates = existingSnapshot.getSensorsState();
 
-            if (!avro.getTimestamp().isBefore(existingSnapshot.getTimestamp())) {
-                log.debug("Old SensorStateAvro: {}", snapshotsAvro.get(avro.getHubId()));
-                Map<String, SensorStateAvro> updatedStates = new HashMap<>(existingSnapshot.getSensorsState());
-                updatedStates.put(avro.getId(), toStateAvro(avro));
+        if (currentStates.containsKey(avro.getId())) {
+            SensorStateAvro currentSensorState = currentStates.get(avro.getId());
 
-                SensorsSnapshotAvro newSnapshot = SensorsSnapshotAvro.newBuilder()
-                        .setHubId(avro.getHubId())
-                        .setTimestamp(avro.getTimestamp())
-                        .setSensorsState(updatedStates)
-                        .build();
-
-                snapshotsAvro.put(avro.getHubId(), newSnapshot);
-                log.debug("New SensorStateAvro: {}", snapshotsAvro.get(avro.getHubId()));
-
-                return Optional.of(newSnapshot);
-
-            } else {
+            if (avro.getTimestamp().isBefore(currentSensorState.getTimestamp())) {
+                log.debug("Skipping sensor {} - event timestamp {} is not after current {}",
+                        avro.getId(), avro.getTimestamp(), currentSensorState.getTimestamp());
                 return Optional.empty();
             }
+
+            if (avro.getTimestamp().equals(currentSensorState.getTimestamp()) &&
+                    currentSensorState.getData().equals(avro.getPayload())) {
+                log.debug("Same timestamp and same data for sensor {}, skipping", avro.getId());
+                return Optional.empty();
+            }
+
+            log.debug("Updating sensor {} - timestamp: {}, data changed",
+                    avro.getId(), avro.getTimestamp());
         }
+
+        Map<String, SensorStateAvro> updatedStates = new HashMap<>(currentStates);
+        updatedStates.put(avro.getId(), toStateAvro(avro));
+
+        Instant maxTimestamp = updatedStates.values().stream()
+                .map(SensorStateAvro::getTimestamp)
+                .max(Instant::compareTo)
+                .orElse(avro.getTimestamp());
+
+        SensorsSnapshotAvro newSnapshot = SensorsSnapshotAvro.newBuilder()
+                .setHubId(avro.getHubId())
+                .setTimestamp(maxTimestamp)
+                .setSensorsState(updatedStates)
+                .build();
+
+        snapshotsAvro.put(avro.getHubId(), newSnapshot);
+        log.debug("Updated snapshot for hub {}, max timestamp: {}", avro.getHubId(), maxTimestamp);
+
+        return Optional.of(newSnapshot);
     }
 
     private SensorStateAvro toStateAvro(SensorEventAvro avro) {
@@ -100,6 +119,4 @@ public class AggregationStarter {
                 .setData(avro.getPayload())
                 .build();
     }
-
-
 }
