@@ -6,9 +6,9 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
+import ru.yandex.practicum.telemetry.collector.handler.sensors.SensorEventHandler;
 import ru.yandex.practicum.telemetry.collector.mapper.SensorEventMapper;
 import telemetry.service.event.SensorEventProto;
-import ru.yandex.practicum.telemetry.collector.handler.sensors.SensorEventHandler;
 
 @Slf4j
 @Component

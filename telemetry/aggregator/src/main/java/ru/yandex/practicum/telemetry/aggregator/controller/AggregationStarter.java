@@ -1,97 +1,165 @@
 package ru.yandex.practicum.telemetry.aggregator.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.avro.specific.SpecificRecordBase;
-import org.apache.kafka.clients.consumer.*;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.avro.generic.GenericData;
+import org.apache.avro.specific.SpecificRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
-import ru.yandex.practicum.kafka.telemetry.event.SensorStateAvro;
-import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
+import ru.yandex.practicum.kafka.telemetry.event.*;
+import ru.yandex.practicum.telemetry.aggregator.clients.Client;
 
 import java.time.Duration;
-import java.util.*;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class AggregationStarter {
-    private final Consumer<String, SensorEventAvro> avroConsumer;
-    private final Producer<String, SpecificRecordBase> avroProducer;
-    private final Map<String, SensorsSnapshotAvro> snapshotAvroMap = new HashMap<>();
-
-    public AggregationStarter () {
-        this.avroProducer = initProducer();
-        this.avroConsumer = initConsumer();
-    }
+    private final Client client;
+    private final Map<String, SensorsSnapshotAvro> snapshotAvro = new HashMap<>();
 
     public void start() {
         try {
-            avroConsumer.subscribe(List.of("telemetry.sensors.v1"));
+            client.getConsumer().subscribe(List.of("telemetry.sensors.v1"));
 
             while (true) {
                 ConsumerRecords<String, SensorEventAvro> records =
-                        avroConsumer.poll(Duration.ofSeconds(5));
-
+                        client.getConsumer().poll(Duration.ofSeconds(5));
                 for (ConsumerRecord<String, SensorEventAvro> record : records) {
-                    Optional<SensorsSnapshotAvro> optionalSensorsSnapshotAvro = updateState(record);
-
-                    if (optionalSensorsSnapshotAvro.isPresent()) {
-                        SensorsSnapshotAvro sensorsSnapshotAvro = optionalSensorsSnapshotAvro.get();
-                        snapshotAvroMap.put(sensorsSnapshotAvro.getHubId(), sensorsSnapshotAvro);
-                        avroProducer.send(new ProducerRecord<>("telemetry.snapshots.v1",
-                                sensorsSnapshotAvro.getHubId(), sensorsSnapshotAvro));
-                    }
-
+                    SensorEventAvro convertedEvent = convertSensorEvent(record.value());
+                    Optional<SensorsSnapshotAvro> optionalSensorsSnapshotAvro = updateState(convertedEvent);
+                    log.debug("Actual snapshotAvro = {}", snapshotAvro);
+                    optionalSensorsSnapshotAvro.ifPresent(sensorsSnapshotAvro ->
+                            client.getProducer().send(new ProducerRecord<>("telemetry.snapshots.v1",
+                                    sensorsSnapshotAvro.getHubId(), sensorsSnapshotAvro)));
                 }
             }
-
         } catch (WakeupException ignored) {
-
         } catch (Exception e) {
             log.error("Ошибка во время обработки событий от датчиков", e);
         } finally {
-
             try {
-                // Перед тем, как закрыть продюсер и консьюмер, нужно убедиться,
-                // что все сообщения, лежащие в буффере, отправлены и
-                // все оффсеты обработанных сообщений зафиксированы
-
-                // здесь нужно вызвать метод продюсера для сброса данных в буффере
-                // здесь нужно вызвать метод консьюмера для фиксации смещений
-
+                client.getProducer().flush();
+                client.getConsumer().commitSync();
             } finally {
-                log.info("Закрываем консьюмер");
-                avroConsumer.close();
-                log.info("Закрываем продюсер");
-                avroProducer.close();
+                log.info("Закрываем консьюмер и продюсер");
+                client.stop();
             }
         }
     }
 
+    private SensorEventAvro convertSensorEvent(SensorEventAvro event) {
+        Object payload = event.getPayload();
 
-    private Optional<SensorsSnapshotAvro> updateState(ConsumerRecord<String, SensorEventAvro> record) {
-        SensorEventAvro avro = record.value();
-        log.debug("Get {} data: {}", avro.getPayload().getClass().getSimpleName(), avro);
-
-        if (!snapshotAvroMap.containsKey(record.key())) {
-            SensorsSnapshotAvro snapshot = newHubInMap(avro);
-            return Optional.of(snapshot);
+        if (payload instanceof SpecificRecord) {
+            return event;
         }
-        return Optional.ofNullable(null);
+
+        if (payload instanceof GenericData.Record) {
+            GenericData.Record payloadRecord = (GenericData.Record) payload;
+            SpecificRecord convertedPayload = convertPayload(payloadRecord);
+
+            return SensorEventAvro.newBuilder()
+                    .setId(event.getId())
+                    .setHubId(event.getHubId())
+                    .setTimestamp(event.getTimestamp())
+                    .setPayload(convertedPayload)
+                    .build();
+        }
+        log.warn("Unknown payload type: {}", payload.getClass());
+        return event;
     }
 
-    private SensorsSnapshotAvro newHubInMap(SensorEventAvro avro) {
-        Map<String, SensorStateAvro> sensorStateMap = new HashMap<>();
-        sensorStateMap.put(avro.getId(), toStateAvro(avro));
-        return SensorsSnapshotAvro.newBuilder()
-                .setHubId(avro.getHubId())
-                .setTimestamp(avro.getTimestamp())
-                .setSensorsState(sensorStateMap)
-                .build();
+    private SpecificRecord convertPayload(GenericData.Record payloadRecord) {
+        String recordName = payloadRecord.getSchema().getName();
+
+        switch (recordName) {
+            case "ClimateSensorAvro":
+                return ClimateSensorAvro.newBuilder()
+                        .setTemperatureC((Integer) payloadRecord.get("temperature_c"))
+                        .setHumidity((Integer) payloadRecord.get("humidity"))
+                        .setCo2Level((Integer) payloadRecord.get("co2_level"))
+                        .build();
+
+            case "LightSensorAvro":
+                return LightSensorAvro.newBuilder()
+                        .setLinkQuality((Integer) payloadRecord.get("link_quality"))
+                        .setLuminosity((Integer) payloadRecord.get("luminosity"))
+                        .build();
+
+            case "MotionSensorAvro":
+                return MotionSensorAvro.newBuilder()
+                        .setLinkQuality((Integer) payloadRecord.get("link_quality"))
+                        .setMotion((Boolean) payloadRecord.get("motion"))
+                        .setVoltage((Integer) payloadRecord.get("voltage"))
+                        .build();
+
+            case "SwitchSensorAvro":
+                return SwitchSensorAvro.newBuilder()
+                        .setState((Boolean) payloadRecord.get("state"))
+                        .build();
+
+            case "TemperatureSensorAvro":
+                Long timestampMillis = (Long) payloadRecord.get("timestamp");
+                Instant instant = Instant.ofEpochMilli(timestampMillis);
+
+                return TemperatureSensorAvro.newBuilder()
+                        .setId(payloadRecord.get("id").toString())
+                        .setHubId(payloadRecord.get("hubId").toString())
+                        .setTimestamp(instant)
+                        .setTemperatureC((Integer) payloadRecord.get("temperature_c"))
+                        .setTemperatureF((Integer) payloadRecord.get("temperature_f"))
+                        .build();
+
+            default:
+                throw new IllegalArgumentException("Неизвестный тип датчика: " + recordName);
+        }
+    }
+
+    private Optional<SensorsSnapshotAvro> updateState(SensorEventAvro avro) {
+        log.debug("Get {} data: {}", avro.getPayload().getClass().getSimpleName(), avro);
+
+        if (!snapshotAvro.containsKey(avro.getHubId())) {
+            Map<String, SensorStateAvro> sensorStateMap = new HashMap<>();
+            sensorStateMap.put(avro.getId(), toStateAvro(avro));
+
+            SensorsSnapshotAvro snapshot = SensorsSnapshotAvro.newBuilder()
+                    .setHubId(avro.getHubId())
+                    .setTimestamp(Instant.now())
+                    .setSensorsState(sensorStateMap)
+                    .build();
+            snapshotAvro.put(avro.getHubId(), snapshot);
+
+            return Optional.of(snapshot);
+
+        } else {
+            SensorsSnapshotAvro existingSnapshot = snapshotAvro.get(avro.getHubId());
+
+            if (avro.getTimestamp().isAfter(existingSnapshot.getTimestamp())) {
+                Map<String, SensorStateAvro> updatedStates = new HashMap<>(existingSnapshot.getSensorsState());
+                updatedStates.put(avro.getId(), toStateAvro(avro));
+
+                SensorsSnapshotAvro newSnapshot = SensorsSnapshotAvro.newBuilder()
+                        .setHubId(avro.getHubId())
+                        .setTimestamp(avro.getTimestamp())
+                        .setSensorsState(updatedStates)
+                        .build();
+
+                snapshotAvro.put(avro.getHubId(), newSnapshot);
+                return Optional.of(newSnapshot);
+
+            } else {
+                return Optional.empty();
+            }
+        }
     }
 
     private SensorStateAvro toStateAvro(SensorEventAvro avro) {
@@ -101,23 +169,5 @@ public class AggregationStarter {
                 .build();
     }
 
-    private Consumer<String, SensorEventAvro> initConsumer()  {
-        Properties config = new Properties();
-        config.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        config.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
-        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "deserializer.SensorEventDeserializer");
-        config.setProperty(ConsumerConfig.GROUP_ID_CONFIG, "sensor-aggregator-group");
-        config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
-        return new KafkaConsumer<>(config);
-    }
-
-    private Producer<String, SpecificRecordBase> initProducer()  {
-        Properties config = new Properties();
-        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
-        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "serializer.AvroSerializer");
-
-        return new KafkaProducer<>(config);
-    }
 }

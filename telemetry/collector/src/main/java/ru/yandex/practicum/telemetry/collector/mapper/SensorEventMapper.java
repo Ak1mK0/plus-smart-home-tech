@@ -1,12 +1,7 @@
 package ru.yandex.practicum.telemetry.collector.mapper;
 
 import ru.yandex.practicum.kafka.telemetry.event.*;
-import telemetry.service.event.SensorEventProto;
-import telemetry.service.event.ClimateSensorProto;
-import telemetry.service.event.LightSensorProto;
-import telemetry.service.event.MotionSensorProto;
-import telemetry.service.event.SwitchSensorProto;
-import telemetry.service.event.TemperatureSensorProto;
+import telemetry.service.event.*;
 
 import java.time.Instant;
 

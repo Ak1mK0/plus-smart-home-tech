@@ -6,10 +6,9 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
-import ru.yandex.practicum.telemetry.collector.mapper.HubEventMapper;
-import ru.yandex.practicum.telemetry.collector.mapper.SensorEventMapper;
-import telemetry.service.event.HubEventProto;
 import ru.yandex.practicum.telemetry.collector.handler.hub.HubEventHandler;
+import ru.yandex.practicum.telemetry.collector.mapper.HubEventMapper;
+import telemetry.service.event.HubEventProto;
 
 @Slf4j
 @Component

@@ -10,10 +10,11 @@ import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
-import telemetry.service.collector.CollectorControllerGrpc;
-import telemetry.service.event.*;
 import ru.yandex.practicum.telemetry.collector.handler.hub.HubEventHandler;
 import ru.yandex.practicum.telemetry.collector.handler.sensors.SensorEventHandler;
+import telemetry.service.collector.CollectorControllerGrpc;
+import telemetry.service.event.HubEventProto;
+import telemetry.service.event.SensorEventProto;
 
 import java.time.Duration;
 import java.util.Map;
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @GrpcService
-public class CollectorController extends CollectorControllerGrpc.CollectorControllerImplBase implements AutoCloseable  {
+public class CollectorController extends CollectorControllerGrpc.CollectorControllerImplBase implements AutoCloseable {
 
     private final Map<SensorEventProto.PayloadCase, SensorEventHandler> sensorEventHandlerMap;
     private final Map<HubEventProto.PayloadCase, HubEventHandler> hubEventHandlerMap;

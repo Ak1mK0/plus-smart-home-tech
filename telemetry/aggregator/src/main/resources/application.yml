@@ -12,8 +12,8 @@ spring:
 
 logging:
   level:
-    io.grpc: DEBUG
-    net.devh.boot.grpc: DEBUG
+    #    io.grpc: DEBUG
+    #    net.devh.boot.grpc: DEBUG
     ru:
       yandex:
         practicum:
@@ -23,3 +23,20 @@ logging:
 
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level --- [%thread] %logger{36} : %msg%n"
+
+kafka:
+  bootstrap-servers: localhost:9092
+
+  consumer:
+    group-id: sensor-aggregator-group
+    auto-offset-reset: earliest
+    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    value-deserializer: deserializer.SensorEventDeserializer
+
+  producer:
+    key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    value-serializer: serializer.AvroSerializer
+
+  topics:
+    sensors: telemetry.sensors.v1
+    snapshots: telemetry.snapshots.v1
