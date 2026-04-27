@@ -36,7 +36,3 @@ kafka:
   producer:
     key-serializer: ${KAFKA_PRODUCER_KEY_SERIALIZER}
     value-serializer: ${KAFKA_PRODUCER_VALUE_SERIALIZER}
-
-  topics:
-    sensors: ${KAFKA_TOPICS_SENSORS}
-    snapshots: ${KAFKA_TOPICS_SNAPSHOTS}
