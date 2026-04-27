@@ -1,4 +1,4 @@
-package ru.yandex.practicum.telemetry.aggregator.clients;
+package ru.yandex.practicum.telemetry.aggregator.client;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ import java.util.Properties;
 @Setter
 @Component
 @RequiredArgsConstructor
-public class ClientConfigurationImpl implements ClientConfiguration {
+public class KafkaClientConfigurationImpl implements ClientConfiguration {
     private final KafkaProperties kafkaProperties;
     private Consumer<String, SensorEventAvro> consumer;
     private Producer<String, SpecificRecordBase> producer;

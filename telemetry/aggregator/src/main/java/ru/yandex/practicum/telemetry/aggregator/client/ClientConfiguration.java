@@ -1,4 +1,4 @@
-package ru.yandex.practicum.telemetry.aggregator.clients;
+package ru.yandex.practicum.telemetry.aggregator.client;
 
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.consumer.Consumer;
