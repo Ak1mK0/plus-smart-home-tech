@@ -17,6 +17,5 @@ public class KafkaProperties {
     public static class ConsumerConfig {
         private String autoOffsetReset;
         private String keyDeserializer;
-        private String valueDeserializer;
     }
 }

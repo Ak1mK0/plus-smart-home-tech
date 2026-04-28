@@ -7,13 +7,14 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     properties:
       hibernate:
         format_sql: false
   autoconfigure:
     exclude:
-          - org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration
-          - org.springframework.boot.autoconfigure.r2dbc.R2dbcTransactionManagerAutoConfiguration
+      - org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration
+      - org.springframework.boot.autoconfigure.r2dbc.R2dbcTransactionManagerAutoConfiguration
 
 grpc:
   server:
@@ -48,4 +49,3 @@ kafka:
   consumer:
     auto-offset-reset: ${KAFKA_CONSUMER_AUTO_OFFSET_RESET}
     key-deserializer: ${KAFKA_CONSUMER_KEY_DESERIALIZER}
-    value-deserializer: ${KAFKA_CONSUMER_VALUE_DESERIALIZER_SNAPSHOT}

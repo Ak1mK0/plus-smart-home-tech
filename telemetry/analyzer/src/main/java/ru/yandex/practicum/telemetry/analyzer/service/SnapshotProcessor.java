@@ -1,19 +1,15 @@
 package ru.yandex.practicum.telemetry.analyzer.service;
 
+import deserializer.SnapshotEventDeserializer;
 import jakarta.annotation.PostConstruct;
-import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.errors.WakeupException;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
-import ru.yandex.practicum.telemetry.analyzer.client.ClientConfiguration;
 import ru.yandex.practicum.telemetry.analyzer.client.KafkaClientConfigurationImpl;
 
 import java.time.Duration;
@@ -34,7 +30,7 @@ public class SnapshotProcessor {
 
     @PostConstruct
     public void init() {
-        this.consumer = client.initConsumer(GROUPID);
+        this.consumer = client.initConsumer(GROUPID, SnapshotEventDeserializer.class);
     }
 
     public void start() {
@@ -45,7 +41,7 @@ public class SnapshotProcessor {
                 ConsumerRecords<String, SensorsSnapshotAvro> records =
                         consumer.poll(Duration.ofSeconds(1));
                 for (ConsumerRecord<String, SensorsSnapshotAvro> record : records) {
-                    log.debug("New data in {}: {}", record.key(), record.value());
+                    log.debug("New SNAPSHOT data in {}: {}", record.key(), record.value());
                 }
             }
         } catch (WakeupException ignored) {
