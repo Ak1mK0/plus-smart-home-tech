@@ -6,7 +6,5 @@ import org.apache.kafka.clients.consumer.Consumer;
 
 public interface ClientConfiguration<T extends SpecificRecordBase> {
 
-    Consumer<String, T> getConsumer(String groupId);
-
-    void stop();
+    Consumer<String, T> initConsumer(String groupId);
 }

@@ -31,7 +31,7 @@ kafka:
     group-id: ${KAFKA_CONSUMER_GROUP_ID_AGGREGATOR}
     auto-offset-reset: ${KAFKA_CONSUMER_AUTO_OFFSET_RESET}
     key-deserializer: ${KAFKA_CONSUMER_KEY_DESERIALIZER}
-    value-deserializer: ${KAFKA_CONSUMER_VALUE_DESERIALIZER}
+    value-deserializer: ${KAFKA_CONSUMER_VALUE_DESERIALIZER_SENSOR}
 
   producer:
     key-serializer: ${KAFKA_PRODUCER_KEY_SERIALIZER}

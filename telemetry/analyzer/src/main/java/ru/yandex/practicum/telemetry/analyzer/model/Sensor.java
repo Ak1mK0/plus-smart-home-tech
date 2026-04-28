@@ -1,9 +1,10 @@
 package ru.yandex.practicum.telemetry.analyzer.model;
 
-import jakarta.persistence.Entity;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
+@Table(name = "sensors")
 @Getter
 @Setter
 @ToString
@@ -11,6 +12,9 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class Sensor {
+    @Id
+    @Column(name = "id", nullable = false)
     private String id;
+    @Column(name = "hub_id", nullable = false)
     private String hubId;
 }
