@@ -41,7 +41,9 @@ public class SnapshotProcessor {
                 ConsumerRecords<String, SensorsSnapshotAvro> records =
                         consumer.poll(Duration.ofSeconds(1));
                 for (ConsumerRecord<String, SensorsSnapshotAvro> record : records) {
-                    log.debug("New SNAPSHOT data in {}: {}", record.key(), record.value());
+                    log.debug("New SNAPSHOT data in {}: Тип {} - {}", record.key(),
+                            record.value().getClass().getSimpleName(),
+                            record.value());
                 }
             }
         } catch (WakeupException ignored) {

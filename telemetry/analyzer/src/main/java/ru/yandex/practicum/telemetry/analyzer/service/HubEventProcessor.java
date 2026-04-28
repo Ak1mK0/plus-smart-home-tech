@@ -41,7 +41,10 @@ public class HubEventProcessor {
                 ConsumerRecords<String, HubEventAvro> records =
                         consumer.poll(Duration.ofSeconds(1));
                 for (ConsumerRecord<String, HubEventAvro> record : records) {
-                    log.debug("New HUB data in {}: {}", record.key(), record.value());
+                    log.debug("New HUB data in {}: Действие {} - {}",
+                            record.key(),
+                            record.value().getPayload().getClass().getSimpleName(),
+                            record.value());
                 }
             }
         } catch (WakeupException ignored) {
