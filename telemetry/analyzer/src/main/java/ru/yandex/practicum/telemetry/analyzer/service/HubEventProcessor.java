@@ -2,20 +2,26 @@ package ru.yandex.practicum.telemetry.analyzer.service;
 
 import deserializer.HubEventDeserializer;
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.errors.WakeupException;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 import ru.yandex.practicum.telemetry.analyzer.client.KafkaClientConfigurationImpl;
+import ru.yandex.practicum.telemetry.analyzer.handler.HubEventHandler;
 
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -26,7 +32,9 @@ public class HubEventProcessor {
 
     private final KafkaClientConfigurationImpl<HubEventAvro> client;
     private Consumer<String, HubEventAvro> consumer;
-    private final Map<String, HubEventAvro> snapshot = new HashMap<>();
+
+    @Resource(name = "hubEventHandlerMap")
+    private final Map<String, HubEventHandler> hubEventHandlerMap;
 
     @PostConstruct
     public void init() {
@@ -36,7 +44,7 @@ public class HubEventProcessor {
     public void start() {
         try {
             consumer.subscribe(TOPICS);
-
+            log.debug("Collect all hub eventsHandler: {}", hubEventHandlerMap);
             while (true) {
                 ConsumerRecords<String, HubEventAvro> records =
                         consumer.poll(Duration.ofSeconds(1));
@@ -45,11 +53,19 @@ public class HubEventProcessor {
                             record.key(),
                             record.value().getPayload().getClass().getSimpleName(),
                             record.value());
+                    if (hubEventHandlerMap.containsKey(record.value().getPayload().getClass().getSimpleName())) {
+                        log.debug("Start working with handler: {}", record.value().getPayload().getClass().getSimpleName());
+                        hubEventHandlerMap.get(record.value().getPayload().getClass().getSimpleName())
+                                .handle(record.value());
+                    } else {
+                        throw new IllegalArgumentException("Не могу найти обработчик для события :" +
+                                record.value().getPayload().getClass().getSimpleName());
+                    }
                 }
             }
         } catch (WakeupException ignored) {
         } catch (Exception e) {
-            log.error("Ошибка во время получения или обработки снимка", e);
+            log.error("Ошибка во время получения данных хаба", e);
         } finally {
             try {
                 consumer.commitSync();

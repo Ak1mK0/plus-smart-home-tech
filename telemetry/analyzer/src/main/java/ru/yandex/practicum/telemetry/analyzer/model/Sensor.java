@@ -18,6 +18,7 @@ public class Sensor {
     @Id
     @Column(name = "id", nullable = false)
     private String id;
+
     @Column(name = "hub_id", nullable = false)
     private String hubId;
 }

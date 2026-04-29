@@ -16,10 +16,15 @@ public class Condition {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
+
     @Column(name = "type", nullable = false)
-    private String type;
+    @Enumerated(EnumType.STRING)
+    private ConditionType type;
+
     @Column(name = "operation", nullable = false)
-    private String operation;
+    @Enumerated(EnumType.STRING)
+    private OperationType operation;
+
     @Column(name = "value", nullable = false)
     private int value;
 }

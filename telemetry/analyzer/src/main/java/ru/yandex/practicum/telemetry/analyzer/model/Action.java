@@ -16,8 +16,11 @@ public class Action {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
+
     @Column(name = "type", nullable = false)
-    private String type;
+    @Enumerated(EnumType.STRING)
+    private ActionType type;
+
     @Column(name = "value", nullable = false)
     private int value;
 }
