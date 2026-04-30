@@ -25,7 +25,10 @@ public class ScenarioAddedHandler implements HubEventHandler {
     @Override
     public void handle(HubEventAvro event) {
         log.debug("Start adding new scenario");
-        scenarioRepository.save(mapToScenario(event));
+        Scenario scenario = mapToScenario(event);
+        if (scenarioRepository.findByHubIdAndName(scenario.getHubId(), scenario.getName()).isEmpty()) {
+            scenarioRepository.save(scenario);
+        }
     }
 
     private Scenario mapToScenario(HubEventAvro event) {

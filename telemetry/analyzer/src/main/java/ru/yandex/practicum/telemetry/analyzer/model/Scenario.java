@@ -25,7 +25,7 @@ public class Scenario {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @MapKeyColumn(
             table = "scenario_conditions",
             name = "sensor_id"
@@ -37,7 +37,7 @@ public class Scenario {
     )
     private Map<String, Condition> conditions;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @MapKeyColumn(
             table = "scenario_actions",
             name = "sensor_id"

@@ -26,8 +26,6 @@ grpc:
       keepAliveWithoutCalls: true
       negotiationType: plaintext
 
-
-
 logging:
   level:
     #    io.grpc: DEBUG

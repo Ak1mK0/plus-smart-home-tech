@@ -8,14 +8,19 @@ import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.errors.WakeupException;
+import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
+import ru.yandex.practicum.kafka.telemetry.event.*;
 import ru.yandex.practicum.telemetry.analyzer.client.KafkaClientConfigurationImpl;
+import ru.yandex.practicum.telemetry.analyzer.model.*;
+import ru.yandex.practicum.telemetry.analyzer.repository.ScenarioRepository;
 
 import java.time.Duration;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -26,7 +31,8 @@ public class SnapshotProcessor {
 
     private final KafkaClientConfigurationImpl<SensorsSnapshotAvro> client;
     private Consumer<String, SensorsSnapshotAvro> consumer;
-    private final Map<String, SensorsSnapshotAvro> snapshot = new HashMap<>();
+    private final ScenarioRepository scenarioRepository;
+    private final HubEventProcessor processor;
 
     @PostConstruct
     public void init() {
@@ -40,10 +46,37 @@ public class SnapshotProcessor {
             while (true) {
                 ConsumerRecords<String, SensorsSnapshotAvro> records =
                         consumer.poll(Duration.ofSeconds(1));
+
                 for (ConsumerRecord<String, SensorsSnapshotAvro> record : records) {
-                    log.debug("New SNAPSHOT data in {}: Тип {} - {}", record.key(),
-                            record.value().getClass().getSimpleName(),
+                    log.debug("SNAPSHOT data in {}:\n {}", record.key(),
                             record.value());
+
+                    List<Scenario> scenarios = scenarioRepository.findByHubId(record.key());
+                    if (scenarios.isEmpty()) {
+                        continue;
+                    }
+
+                    for (Scenario scenario : scenarios) {
+                        log.debug("List scenarios:\n {}", scenario);
+
+
+                        Map<String, Condition> conditions = scenario.getConditions();
+                        Map<String, Action> actions = scenario.getActions();
+
+                        Boolean allConditionsOk = record.value().getSensorsState().keySet().stream()
+                                .filter(conditions::containsKey)
+                                .allMatch(key -> {
+                                    Condition condition = conditions.get(key);
+                                    SensorStateAvro sensor = record.value().getSensorsState().get(key);
+                                    return conditionType(condition, sensor);
+                                });
+                        log.debug("Condition check: {}", allConditionsOk);
+
+                        if (allConditionsOk) {
+
+                        }
+                    }
+
                 }
             }
         } catch (WakeupException ignored) {
@@ -55,6 +88,45 @@ public class SnapshotProcessor {
             } finally {
                 log.info("Закрываем консьюмер");
                 consumer.close();
+            }
+        }
+    }
+
+    private boolean conditionType(Condition condition, SensorStateAvro sensorAvro) {
+        Integer sensorValue =
+        switch (sensorAvro.getData()) {
+            case ClimateSensorAvro climateSensor -> switch (condition.getType()) {
+                case TEMPERATURE -> climateSensor.getTemperatureC();
+                case HUMIDITY -> climateSensor.getHumidity();
+                case CO2LEVEL -> climateSensor.getCo2Level();
+                default -> null;
+            };
+            case LightSensorAvro lightSensor -> lightSensor.getLuminosity();
+            case MotionSensorAvro motionSensor -> motionSensor.getMotion() ? 1 : 0;
+            case SwitchSensorAvro switchSensor -> switchSensor.getState() ? 1 : 0;
+            case TemperatureSensorAvro temperatureSensor -> switch (condition.getType()) {
+                case TEMPERATURE -> temperatureSensor.getTemperatureC();
+                default -> null;
+            };
+            default -> null;
+        };
+        return conditionCheck(condition, sensorValue);
+    }
+
+    private boolean conditionCheck(Condition condition, Integer sensorValue) {
+        int operationValue = condition.getValue();
+        switch (condition.getOperation()) {
+            case LOWER_THAN -> {
+                return operationValue < sensorValue;
+            }
+            case GREATER_THAN -> {
+                return operationValue > sensorValue;
+            }
+            case EQUALS -> {
+                return operationValue == sensorValue;
+            }
+            default -> {
+                return false;
             }
         }
     }

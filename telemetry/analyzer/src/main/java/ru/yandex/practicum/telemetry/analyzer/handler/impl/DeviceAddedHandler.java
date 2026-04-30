@@ -23,11 +23,14 @@ public class DeviceAddedHandler implements HubEventHandler {
     @Override
     public void handle(HubEventAvro event) {
         log.debug("Start adding new data");
-        sensorRepository.save(mapToSensor(event));
+        Sensor sensor = mapToSensor(event);
+        if (sensorRepository.findById(sensor.getId()).isEmpty()) {
+            sensorRepository.save(mapToSensor(event));
+        }
     }
 
     private Sensor mapToSensor(HubEventAvro event) {
         DeviceAddedEventAvro deviceAddedEventAvro = (DeviceAddedEventAvro) event.getPayload();
-        return new Sensor(deviceAddedEventAvro.getId(), event.getHubId());
+            return new Sensor(deviceAddedEventAvro.getId(), event.getHubId());
     }
 }
