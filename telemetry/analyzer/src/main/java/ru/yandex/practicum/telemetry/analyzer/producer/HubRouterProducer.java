@@ -10,10 +10,10 @@ import telemetry.service.event.DeviceActionRequestProto;
 @Component
 public class HubRouterProducer {
 
-    @GrpcClient("client")
+    @GrpcClient("hub-router")
     private HubRouterControllerGrpc.HubRouterControllerBlockingStub controller;
 
-    private void send(DeviceActionRequestProto request) {
+    public void send(DeviceActionRequestProto request) {
         controller.handleDeviceAction(request);
     }
 }

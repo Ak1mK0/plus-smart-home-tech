@@ -1,5 +1,7 @@
 package ru.yandex.practicum.telemetry.analyzer.service;
 
+import com.google.protobuf.Timestamp;
+import com.google.protobuf.util.Timestamps;
 import deserializer.SnapshotEventDeserializer;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -8,19 +10,23 @@ import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.errors.WakeupException;
-import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.kafka.telemetry.event.*;
 import ru.yandex.practicum.telemetry.analyzer.client.KafkaClientConfigurationImpl;
-import ru.yandex.practicum.telemetry.analyzer.model.*;
+import ru.yandex.practicum.telemetry.analyzer.model.Action;
+import ru.yandex.practicum.telemetry.analyzer.model.ActionType;
+import ru.yandex.practicum.telemetry.analyzer.model.Condition;
+import ru.yandex.practicum.telemetry.analyzer.model.Scenario;
+import ru.yandex.practicum.telemetry.analyzer.producer.HubRouterProducer;
 import ru.yandex.practicum.telemetry.analyzer.repository.ScenarioRepository;
+import telemetry.service.event.ActionTypeProto;
+import telemetry.service.event.DeviceActionProto;
+import telemetry.service.event.DeviceActionRequestProto;
 
 import java.time.Duration;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -32,7 +38,7 @@ public class SnapshotProcessor {
     private final KafkaClientConfigurationImpl<SensorsSnapshotAvro> client;
     private Consumer<String, SensorsSnapshotAvro> consumer;
     private final ScenarioRepository scenarioRepository;
-    private final HubEventProcessor processor;
+    private final HubRouterProducer producer;
 
     @PostConstruct
     public void init() {
@@ -73,7 +79,28 @@ public class SnapshotProcessor {
                         log.debug("Condition check: {}", allConditionsOk);
 
                         if (allConditionsOk) {
+                            for (String actionSensor : actions.keySet()) {
 
+                                DeviceActionProto.Builder builder = DeviceActionProto.newBuilder()
+                                        .setSensorId(actionSensor)
+                                        .setType(mapToProto(actions.get(actionSensor).getType()));
+
+                                Optional.ofNullable(actions.get(actionSensor).getValue())
+                                        .ifPresent(builder::setValue);
+
+                                DeviceActionProto action = builder.build();
+
+                                Timestamp timestamp = Timestamps.fromMillis(System.currentTimeMillis());
+
+                                DeviceActionRequestProto request = DeviceActionRequestProto.newBuilder()
+                                        .setHubId(scenario.getHubId())
+                                        .setScenarioName(scenario.getName())
+                                        .setAction(action)
+                                        .setTimestamp(timestamp)
+                                        .build();
+                                log.debug("Sending protoAction:\n {}", request);
+                                producer.send(request);
+                            }
                         }
                     }
 
@@ -86,7 +113,7 @@ public class SnapshotProcessor {
             try {
                 consumer.commitSync();
             } finally {
-                log.info("Закрываем консьюмер");
+                log.info("Закрываем консьюмер и продюсер");
                 consumer.close();
             }
         }
@@ -94,22 +121,22 @@ public class SnapshotProcessor {
 
     private boolean conditionType(Condition condition, SensorStateAvro sensorAvro) {
         Integer sensorValue =
-        switch (sensorAvro.getData()) {
-            case ClimateSensorAvro climateSensor -> switch (condition.getType()) {
-                case TEMPERATURE -> climateSensor.getTemperatureC();
-                case HUMIDITY -> climateSensor.getHumidity();
-                case CO2LEVEL -> climateSensor.getCo2Level();
-                default -> null;
-            };
-            case LightSensorAvro lightSensor -> lightSensor.getLuminosity();
-            case MotionSensorAvro motionSensor -> motionSensor.getMotion() ? 1 : 0;
-            case SwitchSensorAvro switchSensor -> switchSensor.getState() ? 1 : 0;
-            case TemperatureSensorAvro temperatureSensor -> switch (condition.getType()) {
-                case TEMPERATURE -> temperatureSensor.getTemperatureC();
-                default -> null;
-            };
-            default -> null;
-        };
+                switch (sensorAvro.getData()) {
+                    case ClimateSensorAvro climateSensor -> switch (condition.getType()) {
+                        case TEMPERATURE -> climateSensor.getTemperatureC();
+                        case HUMIDITY -> climateSensor.getHumidity();
+                        case CO2LEVEL -> climateSensor.getCo2Level();
+                        default -> null;
+                    };
+                    case LightSensorAvro lightSensor -> lightSensor.getLuminosity();
+                    case MotionSensorAvro motionSensor -> motionSensor.getMotion() ? 1 : 0;
+                    case SwitchSensorAvro switchSensor -> switchSensor.getState() ? 1 : 0;
+                    case TemperatureSensorAvro temperatureSensor -> switch (condition.getType()) {
+                        case TEMPERATURE -> temperatureSensor.getTemperatureC();
+                        default -> null;
+                    };
+                    default -> null;
+                };
         return conditionCheck(condition, sensorValue);
     }
 
@@ -127,6 +154,26 @@ public class SnapshotProcessor {
             }
             default -> {
                 return false;
+            }
+        }
+    }
+
+    private ActionTypeProto mapToProto(ActionType type) {
+        switch (type) {
+            case ACTIVATE -> {
+                return ActionTypeProto.ACTIVATE;
+            }
+            case DEACTIVATE -> {
+                return ActionTypeProto.DEACTIVATE;
+            }
+            case SET_VALUE -> {
+                return ActionTypeProto.SET_VALUE;
+            }
+            case INVERSE -> {
+                return ActionTypeProto.INVERSE;
+            }
+            default -> {
+                return null;
             }
         }
     }
