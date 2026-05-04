@@ -144,13 +144,13 @@ public class SnapshotProcessor {
         int operationValue = condition.getValue();
         switch (condition.getOperation()) {
             case LOWER_THAN -> {
-                return operationValue < sensorValue;
+                return sensorValue < operationValue;
             }
             case GREATER_THAN -> {
-                return operationValue > sensorValue;
+                return sensorValue > operationValue;
             }
             case EQUALS -> {
-                return operationValue == sensorValue;
+                return sensorValue == operationValue;
             }
             default -> {
                 return false;
