@@ -25,14 +25,14 @@ logging:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level --- [%thread] %logger{36} : %msg%n"
 
 kafka:
-  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+  bootstrap-servers: localhost:9092
 
   consumer:
-    group-id: ${KAFKA_CONSUMER_GROUP_ID_AGGREGATOR}
-    auto-offset-reset: ${KAFKA_CONSUMER_AUTO_OFFSET_RESET}
-    key-deserializer: ${KAFKA_CONSUMER_KEY_DESERIALIZER}
-    value-deserializer: ${KAFKA_CONSUMER_VALUE_DESERIALIZER_SENSOR}
+    group-id: sensor-aggregator-group
+    auto-offset-reset: earliest
+    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    value-deserializer: deserializer.SensorEventDeserializer
 
   producer:
-    key-serializer: ${KAFKA_PRODUCER_KEY_SERIALIZER}
-    value-serializer: ${KAFKA_PRODUCER_VALUE_SERIALIZER}
+    key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    value-serializer: serializer.AvroSerializer
