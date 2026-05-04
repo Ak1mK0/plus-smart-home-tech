@@ -1,14 +1,30 @@
-grpc:
-  server:
-    port: 59091
-    reflection-service-enabled: true
-
 spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: false
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration
       - org.springframework.boot.autoconfigure.r2dbc.R2dbcTransactionManagerAutoConfiguration
 
+grpc:
+  server:
+    port: 59091
+    reflection-service-enabled: true
+  client:
+    hub-router:
+      address: 'static://localhost:59090'
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
+      negotiationType: plaintext
 
 logging:
   level:
@@ -18,7 +34,7 @@ logging:
       yandex:
         practicum:
           telemetry:
-            aggregator:
+            analyzer:
               DEBUG
 
   pattern:
@@ -28,11 +44,5 @@ kafka:
   bootstrap-servers: localhost:9092
 
   consumer:
-    group-id: sensor-aggregator-group
     auto-offset-reset: earliest
     key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-    value-deserializer: deserializer.SensorEventDeserializer
-
-  producer:
-    key-serializer: org.apache.kafka.common.serialization.StringSerializer
-    value-serializer: serializer.AvroSerializer

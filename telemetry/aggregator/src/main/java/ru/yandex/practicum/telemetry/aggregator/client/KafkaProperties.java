@@ -1,4 +1,4 @@
-package ru.yandex.practicum.telemetry.aggregator.clients;
+package ru.yandex.practicum.telemetry.aggregator.client;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -15,8 +15,6 @@ public class KafkaProperties {
 
     private ProducerConfig producer = new ProducerConfig();
 
-    private TopicsConfig topics = new TopicsConfig();
-
     @Data
     public static class ConsumerConfig {
         private String groupId;
@@ -29,11 +27,5 @@ public class KafkaProperties {
     public static class ProducerConfig {
         private String keySerializer;
         private String valueSerializer;
-    }
-
-    @Data
-    public static class TopicsConfig {
-        private String sensors;
-        private String snapshots;
     }
 }
