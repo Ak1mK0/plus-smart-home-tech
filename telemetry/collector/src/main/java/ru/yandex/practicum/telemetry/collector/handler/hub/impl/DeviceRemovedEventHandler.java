@@ -13,7 +13,7 @@ import telemetry.service.event.HubEventProto;
 @Slf4j
 @Component
 public class DeviceRemovedEventHandler implements HubEventHandler {
-    HubEventMapper mapper = new HubEventMapper();
+    private final HubEventMapper mapper = new HubEventMapper();
 
     @Override
     public HubEventProto.PayloadCase getMessageType() {

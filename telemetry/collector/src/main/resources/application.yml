@@ -25,3 +25,9 @@ logging:
                 DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level --- [%thread] %logger{36} : %msg%n"
+
+kafka:
+  producer:
+    bootstrap-servers: localhost:9092
+    key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    value-serializer: serializer.AvroSerializer

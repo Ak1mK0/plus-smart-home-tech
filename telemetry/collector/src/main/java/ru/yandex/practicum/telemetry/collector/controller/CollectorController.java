@@ -10,6 +10,7 @@ import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import ru.yandex.practicum.telemetry.collector.client.KafkaProducerConfig;
 import ru.yandex.practicum.telemetry.collector.handler.hub.HubEventHandler;
 import ru.yandex.practicum.telemetry.collector.handler.sensors.SensorEventHandler;
 import telemetry.service.collector.CollectorControllerGrpc;
@@ -32,7 +33,8 @@ public class CollectorController extends CollectorControllerGrpc.CollectorContro
     private final Producer<String, SpecificRecordBase> producer;
 
     public CollectorController(Set<SensorEventHandler> sensorEventHandlerSet,
-                               Set<HubEventHandler> hubEventHandlerSet) {
+                               Set<HubEventHandler> hubEventHandlerSet,
+                               KafkaProducerConfig kafkaProducerConfig) {
         this.sensorEventHandlerMap = sensorEventHandlerSet.stream()
                 .collect(Collectors.toMap(
                         SensorEventHandler::getMessageType,
@@ -43,7 +45,7 @@ public class CollectorController extends CollectorControllerGrpc.CollectorContro
                         HubEventHandler::getMessageType,
                         Function.identity()
                 ));
-        this.producer = initProducer();
+        this.producer = kafkaProducerConfig.createProducer();
     }
 
     @Override
@@ -76,15 +78,6 @@ public class CollectorController extends CollectorControllerGrpc.CollectorContro
         } catch (Exception e) {
             responseObserver.onError(new StatusRuntimeException(Status.fromThrowable(e)));
         }
-    }
-
-    private Producer<String, SpecificRecordBase> initProducer() {
-        Properties config = new Properties();
-        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
-        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "serializer.AvroSerializer");
-
-        return new KafkaProducer<>(config);
     }
 
     @Override

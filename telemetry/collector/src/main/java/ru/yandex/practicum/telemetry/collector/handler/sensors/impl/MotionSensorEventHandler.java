@@ -13,7 +13,7 @@ import telemetry.service.event.SensorEventProto;
 @Slf4j
 @Component
 public class MotionSensorEventHandler implements SensorEventHandler {
-    SensorEventMapper mapper = new SensorEventMapper();
+    private final SensorEventMapper mapper = new SensorEventMapper();
 
     @Override
     public SensorEventProto.PayloadCase getMessageType() {
