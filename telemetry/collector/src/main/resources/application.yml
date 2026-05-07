@@ -1,5 +1,7 @@
-server:
-  port: 8080
+grpc:
+  server:
+    port: 59091
+    reflection-service-enabled: true
 
 spring:
   autoconfigure:
@@ -10,6 +12,8 @@ spring:
 
 logging:
   level:
+    #    io.grpc: DEBUG
+    #    net.devh.boot.grpc: DEBUG
     ru:
       yandex:
         practicum:
@@ -17,7 +21,13 @@ logging:
             collector:
               controller:
                 DEBUG
-              service:
+              handler:
                 DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level --- [%thread] %logger{36} : %msg%n"
+
+kafka:
+  producer:
+    bootstrap-servers: localhost:9092
+    key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    value-serializer: serializer.AvroSerializer
