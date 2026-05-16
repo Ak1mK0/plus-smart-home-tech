@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: analyzer
   datasource:
     url: jdbc:postgresql://localhost:5432/postgres
     username: postgres
@@ -14,6 +16,10 @@ spring:
     exclude:
       - org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration
       - org.springframework.boot.autoconfigure.r2dbc.R2dbcTransactionManagerAutoConfiguration
+  eureka:
+    client:
+      serviceUrl:
+        defaultZone: http://localhost:8761/eureka/
 
 grpc:
   server:
