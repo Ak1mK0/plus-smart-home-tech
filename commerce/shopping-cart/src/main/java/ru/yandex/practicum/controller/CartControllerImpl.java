@@ -27,7 +27,7 @@ public class CartControllerImpl implements CartController {
     @Loggable
     @PutMapping
     public ShoppingCartDto putProductInCart(@RequestParam String username,
-                                     @RequestBody Map<UUID, Integer> productCart) {
+                                            @RequestBody Map<UUID, Integer> productCart) {
         return null;
     }
 
@@ -40,14 +40,14 @@ public class CartControllerImpl implements CartController {
     @Loggable
     @PostMapping("/remove")
     public ShoppingCartDto removeProductFromCart(@RequestParam String username,
-                                          @RequestBody List<UUID> productId) {
+                                                 @RequestBody List<UUID> productId) {
         return null;
     }
 
     @Loggable
     @PostMapping("/change-quantity")
     public ShoppingCartDto changeProductQuantityInCart(@RequestParam String username,
-                                                @RequestBody ChangeProductQuantityRequest request) {
+                                                       @RequestBody ChangeProductQuantityRequest request) {
         return null;
     }
 

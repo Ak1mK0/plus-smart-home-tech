@@ -22,9 +22,9 @@ public class StoreControllerImpl implements StoreController {
     @Loggable
     @GetMapping
     public PageProductDto getListOfProducts(@RequestParam ProductCategory category,
-                                     @RequestParam int page,
-                                     @RequestParam int size,
-                                     @RequestParam ArrayList<String> sort) {
+                                            @RequestParam int page,
+                                            @RequestParam int size,
+                                            @RequestParam ArrayList<String> sort) {
         return null;
     }
 
@@ -55,7 +55,7 @@ public class StoreControllerImpl implements StoreController {
     @Loggable
     @GetMapping("/{productId}")
     public ProductDto getProductInfo(@PathVariable UUID id,
-                              @RequestBody UUID productId) {
+                                     @RequestBody UUID productId) {
         return null;
     }
 }
