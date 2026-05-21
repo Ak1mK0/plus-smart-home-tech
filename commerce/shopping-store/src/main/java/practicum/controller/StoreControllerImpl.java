@@ -8,6 +8,7 @@ import ru.yandex.practicum.dto.PageProductDto;
 import ru.yandex.practicum.dto.ProductCategory;
 import ru.yandex.practicum.dto.ProductDto;
 import ru.yandex.practicum.dto.SetProductQuantityStateRequest;
+import ru.yandex.practicum.logging.Loggable;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -18,6 +19,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class StoreControllerImpl implements StoreController {
 
+    @Loggable
     @GetMapping
     public PageProductDto getListOfProducts(@RequestParam ProductCategory category,
                                      @RequestParam int page,
@@ -26,26 +28,31 @@ public class StoreControllerImpl implements StoreController {
         return null;
     }
 
+    @Loggable
     @PutMapping
     public ProductDto createNewProduct(@RequestBody ProductDto product) {
         return null;
     }
 
+    @Loggable
     @PostMapping
     public ProductDto updateProductInfo(@RequestBody ProductDto product) {
         return null;
     }
 
+    @Loggable
     @PostMapping("/removeProductFromStore")
     public boolean removeProductFromStore(@RequestBody UUID productId) {
         return false;
     }
 
+    @Loggable
     @PostMapping("/quantityState")
     public boolean changeQuantityState(@RequestBody SetProductQuantityStateRequest quantityState) {
         return false;
     }
 
+    @Loggable
     @GetMapping("/{productId}")
     public ProductDto getProductInfo(@PathVariable UUID id,
                               @RequestBody UUID productId) {
