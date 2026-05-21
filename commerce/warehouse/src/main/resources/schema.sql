@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS warehouse (
+    id UUID PRIMARY KEY,
+    fragile BOOLEAN NOT NULL,
+    width DOUBLE PRECISION NOT NULL CHECK (width >= 1.0),
+    height DOUBLE PRECISION NOT NULL CHECK (width >= 1.0),
+    depth DOUBLE PRECISION NOT NULL CHECK (width >= 1.0),
+    weight DOUBLE PRECISION NOT NULL CHECK (width >= 1.0)
+);
