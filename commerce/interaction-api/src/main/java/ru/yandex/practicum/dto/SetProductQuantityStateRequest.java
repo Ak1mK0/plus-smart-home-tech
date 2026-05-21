@@ -7,14 +7,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class SetProductQuantityStateRequest {
-    @Pattern(regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-            message = "Не верный формат UUID")
-    private String productId;
+    @NotNull(message = "ID продукта обязателен")
+    private UUID productId;
     @NotNull(message = "Количество продукта не может быть пустым")
     private QuantityState quantityState;
 }

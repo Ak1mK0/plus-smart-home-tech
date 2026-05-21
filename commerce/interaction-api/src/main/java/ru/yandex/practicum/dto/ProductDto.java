@@ -8,14 +8,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductDto {
-    @Pattern(regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-            message = "Не верный формат UUID")
-    private String productId;
+    @NotNull(message = "ID продукта обязателен")
+    private UUID productId;
     @NotNull(message = "Имя продукта не может быть пустым")
     private String productName;
     @NotNull(message = "Описание продукта не может быть пустым")
