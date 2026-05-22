@@ -30,6 +30,5 @@ public interface StoreController {
     boolean changeQuantityState(@RequestBody SetProductQuantityStateRequest quantityState);
 
     @GetMapping("/{productId}")
-    ProductDto getProductInfo(@PathVariable UUID id,
-                              @RequestBody UUID productId);
+    ProductDto getProductInfo(@PathVariable UUID id);
 }

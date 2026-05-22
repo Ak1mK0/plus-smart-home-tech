@@ -16,8 +16,6 @@ import ru.yandex.practicum.service.WarehouseService;
 
 import java.util.UUID;
 
-import static org.springframework.data.util.Optionals.ifPresentOrElse;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
