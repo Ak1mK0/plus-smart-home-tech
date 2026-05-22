@@ -6,40 +6,45 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.controller.warehouse.WarehouseController;
 import ru.yandex.practicum.dto.*;
 import ru.yandex.practicum.logging.Loggable;
+import ru.yandex.practicum.model.Address;
+import ru.yandex.practicum.model.Product;
+import ru.yandex.practicum.model.mapper.AddressMapper;
+import ru.yandex.practicum.model.mapper.ProductMapper;
+import ru.yandex.practicum.service.WarehouseService;
 
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/warehouse")
 @RequiredArgsConstructor
 public class WarehouseControllerImpl implements WarehouseController {
+    private final WarehouseService warehouseService;
+    private final AddressMapper addressMapper;
+    private final ProductMapper productMapper;
 
     @Loggable
     @PutMapping
-    public void newProductInWarehouse(@RequestBody NewProductInWarehouseRequest product) {
-
+    public void newProductInWarehouse(@RequestBody NewProductInWarehouseRequest dto) {
+        Product product = productMapper.toEntity(dto);
+        warehouseService.saveProductInWarehouse(product);
     }
 
     @Loggable
     @PostMapping("/check")
     public BookedProductsDto checkAvailableAllProductInShoppingCart(@RequestBody ShoppingCartDto shoppingCart) {
+        warehouseService.checkShoppingCart(null);
         return null;
     }
 
     @Loggable
     @PostMapping("/add")
     public void addQuantityInProduct(@RequestBody AddProductToWarehouseRequest productQuantity) {
-
+        warehouseService.addQuantityInProduct(productQuantity.getProductId(), productQuantity.getQuantity());
     }
 
     @Loggable
     @GetMapping("/address")
     public AddressDto getWarehouseAddress() {
-        return AddressDto.builder()
-                .country("Country")
-                .sity("Sity")
-                .street("Street")
-                .house("House")
-                .flat("Flat")
-                .build();
+        Address address = warehouseService.getWarehouseAddress();
+        return addressMapper.toDto(address);
     }
 }

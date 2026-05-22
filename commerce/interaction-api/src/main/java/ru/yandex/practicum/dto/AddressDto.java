@@ -13,8 +13,8 @@ import lombok.NoArgsConstructor;
 public class AddressDto {
     @NotBlank(message = "Не верно указанно поле: country")
     private String country;
-    @NotBlank(message = "Не верно указанно поле: sity")
-    private String sity;
+    @NotBlank(message = "Не верно указанно поле: city")
+    private String city;
     @NotBlank(message = "Не верно указанно поле: street")
     private String street;
     @NotBlank(message = "Не верно указанно поле: house")
