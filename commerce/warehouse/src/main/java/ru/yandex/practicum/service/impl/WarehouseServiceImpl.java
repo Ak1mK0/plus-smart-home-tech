@@ -43,8 +43,8 @@ public class WarehouseServiceImpl implements WarehouseService {
     public void addQuantityInProduct(UUID id, int quantity) {
         Product product = warehouseRepository.findById(id)
                 .orElseThrow(() -> new NoSpecifiedProductInWarehouseException("Not found product with ID: " + id));
-            product.setQuantity(quantity);
-            warehouseRepository.save(product);
+        product.setQuantity(quantity);
+        warehouseRepository.save(product);
     }
 
     @Loggable

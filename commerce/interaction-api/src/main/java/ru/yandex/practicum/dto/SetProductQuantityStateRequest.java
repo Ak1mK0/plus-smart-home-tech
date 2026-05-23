@@ -16,5 +16,5 @@ public class SetProductQuantityStateRequest {
     @NotNull(message = "ID продукта обязателен")
     private UUID productId;
     @NotNull(message = "Количество продукта не может быть пустым")
-    private QuantityState quantityState;
+    private QuantityStateDto quantityStateDto;
 }

@@ -1,13 +1,26 @@
 package ru.yandex.practicum.model.mapper;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingConstants;
+import javax.annotation.processing.Generated;
+import org.springframework.stereotype.Component;
 import ru.yandex.practicum.dto.AddressDto;
 import ru.yandex.practicum.model.Address;
 
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
-public interface AddressMapper {
+@Component
+public class AddressMapper {
 
-    AddressDto toDto(Address address);
+    public AddressDto toDto(Address address) {
+        if ( address == null ) {
+            return null;
+        }
 
+        AddressDto.AddressDtoBuilder addressDto = AddressDto.builder();
+
+        addressDto.country( address.getCountry() );
+        addressDto.city( address.getCity() );
+        addressDto.street( address.getStreet() );
+        addressDto.house( address.getHouse() );
+        addressDto.flat( address.getFlat() );
+
+        return addressDto.build();
+    }
 }

@@ -1,21 +1,21 @@
 package ru.yandex.practicum.controller.shopping.store;
 
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.dto.PageProductDto;
-import ru.yandex.practicum.dto.ProductCategory;
+import ru.yandex.practicum.dto.ProductCategoryDto;
 import ru.yandex.practicum.dto.ProductDto;
 import ru.yandex.practicum.dto.SetProductQuantityStateRequest;
+import org.springframework.data.domain.Page;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public interface StoreController {
 
     @GetMapping
-    PageProductDto getListOfProducts(@RequestParam ProductCategory category,
-                                     @RequestParam int page,
-                                     @RequestParam int size,
-                                     @RequestParam ArrayList<String> sort);
+    Page<ProductDto> getListOfProducts(@RequestParam ProductCategoryDto category,
+                                       @RequestParam int page,
+                                       @RequestParam int size,
+                                       @RequestParam List<String> sort);
 
     @PutMapping
     ProductDto createNewProduct(@RequestBody ProductDto product);

@@ -4,16 +4,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.controller.shopping.store.StoreController;
-import ru.yandex.practicum.dto.PageProductDto;
-import ru.yandex.practicum.dto.ProductCategory;
+import ru.yandex.practicum.dto.ProductCategoryDto;
 import ru.yandex.practicum.dto.ProductDto;
 import ru.yandex.practicum.dto.SetProductQuantityStateRequest;
 import ru.yandex.practicum.logging.Loggable;
 import ru.yandex.practicum.model.Product;
+import ru.yandex.practicum.model.ProductCategory;
+import ru.yandex.practicum.model.mapper.ProductCategoryMapper;
 import ru.yandex.practicum.model.mapper.ProductMapper;
 import ru.yandex.practicum.service.StoreService;
+import org.springframework.data.domain.Page;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -23,14 +25,17 @@ import java.util.UUID;
 public class StoreControllerImpl implements StoreController {
     private final StoreService storeService;
     private final ProductMapper productMapper;
+    private final ProductCategoryMapper productCategoryMapper;
 
     @Loggable
     @GetMapping
-    public PageProductDto getListOfProducts(@RequestParam ProductCategory category,
-                                            @RequestParam int page,
-                                            @RequestParam int size,
-                                            @RequestParam ArrayList<String> sort) {
-        return null;
+    public Page<ProductDto> getListOfProducts(@RequestParam ProductCategoryDto category,
+                                              @RequestParam(defaultValue = "0") int page,
+                                              @RequestParam(defaultValue = "20") int size,
+                                              @RequestParam(defaultValue = "productName") List<String> sort) {
+        ProductCategory productCategory = productCategoryMapper.toEntity(category);
+        Page<Product> products = storeService.getListOfProducts(productCategory, page, size, sort);
+        return products.map(productMapper::toDto);
     }
 
     @Loggable

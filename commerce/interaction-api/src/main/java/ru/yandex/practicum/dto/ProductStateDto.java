@@ -1,6 +1,6 @@
 package ru.yandex.practicum.dto;
 
-public enum ProductState {
+public enum ProductStateDto {
     ACTIVE,
     DEACTIVATE
 }

@@ -22,10 +22,10 @@ public class ProductDto {
     private String description;
     private String imageSrc;
     @NotNull(message = "Количество продукта не может быть пустым")
-    private QuantityState quantityState;
+    private QuantityStateDto quantityState;
     @NotNull(message = "Статус продукта не может быть пустым")
-    private ProductState productState;
-    private ProductCategory productCategory;
+    private ProductStateDto productState;
+    private ProductCategoryDto productCategory;
     @DecimalMin(value = "1.0", message = "Цена продукта должна быть больше или равна 1.0")
     private double price;
 }

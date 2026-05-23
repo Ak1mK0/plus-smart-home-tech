@@ -1,6 +1,6 @@
 package ru.yandex.practicum.dto;
 
-public enum ProductCategory {
+public enum ProductCategoryDto {
     LIGHTING,
     CONTROL,
     SENSORS
