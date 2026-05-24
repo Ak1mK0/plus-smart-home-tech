@@ -79,16 +79,27 @@ public class StoreServiceImpl implements StoreService {
                                            int size,
                                            List<String> sorts) {
         List<Sort.Order> order = new ArrayList<>();
-        for (String sort : sorts) {
-            String[] sorting = sort.split(",");
-            Sort.Direction direction = Sort.Direction.ASC;
-            if (sorting.length > 1) {
-                if ("desc".equalsIgnoreCase(sorting[1].trim())) {
+
+        if (sorts != null && !sorts.isEmpty()) {
+            for (String sort : sorts) {
+                String[] sorting = sort.split(",");
+                if (sorting.length == 0) continue;
+                String field = sorting[0].trim();
+                if ("ASC".equalsIgnoreCase(field) || "DESC".equalsIgnoreCase(field)) {
+                    continue;
+                }
+                Sort.Direction direction = Sort.Direction.ASC;
+                if (sorting.length > 1 && "desc".equalsIgnoreCase(sorting[1].trim())) {
                     direction = Sort.Direction.DESC;
                 }
+                order.add(new Sort.Order(direction, field));
             }
-            order.add(new Sort.Order(direction, sorting[0]));
         }
+
+        if (order.isEmpty()) {
+            order.add(Sort.Order.asc("productName"));
+        }
+
         Pageable pageable = PageRequest.of(page, size, Sort.by(order));
         return storeRepository.findByProductCategory(category, pageable);
     }
