@@ -13,11 +13,21 @@ spring:
       serviceUrl:
         defaultZone: http://localhost:8761/eureka/
 
+feign:
+  circuitbreaker:
+    enabled: true
+
+resilience4j.circuitbreaker:
+  configs:
+    default:
+      slidingWindowSize: 50
+      failureRateThreshold: 50
+
 logging:
   level:
     ru.yandex.practicum: DEBUG
-#    org.springframework.cloud.openfeign: DEBUG
-#    com.netflix.discovery: DEBUG
+  #    org.springframework.cloud.openfeign: DEBUG
+  #    com.netflix.discovery: DEBUG
 
 
   pattern:
