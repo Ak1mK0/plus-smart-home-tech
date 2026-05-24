@@ -11,7 +11,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.controller.shopping.store.StoreController;
-import ru.yandex.practicum.controller.warehouse.feign.WarehouseControllerFeign;
 import ru.yandex.practicum.dto.ProductCategoryDto;
 import ru.yandex.practicum.dto.ProductDto;
 import ru.yandex.practicum.dto.QuantityStateDto;
@@ -24,7 +23,6 @@ import ru.yandex.practicum.model.mapper.ProductMapper;
 import ru.yandex.practicum.model.mapper.QuantityStateMapper;
 import ru.yandex.practicum.service.StoreService;
 
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j

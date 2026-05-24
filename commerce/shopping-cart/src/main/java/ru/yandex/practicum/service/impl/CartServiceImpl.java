@@ -11,7 +11,10 @@ import ru.yandex.practicum.model.ShoppingCartStatus;
 import ru.yandex.practicum.repository.CartRepository;
 import ru.yandex.practicum.service.CartService;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Slf4j
 @Service

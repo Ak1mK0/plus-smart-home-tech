@@ -11,7 +11,6 @@ import ru.yandex.practicum.dto.ProductCategoryDto;
 import ru.yandex.practicum.dto.ProductDto;
 import ru.yandex.practicum.dto.QuantityStateDto;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface StoreController {

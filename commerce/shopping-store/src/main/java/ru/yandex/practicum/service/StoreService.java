@@ -6,7 +6,6 @@ import ru.yandex.practicum.model.Product;
 import ru.yandex.practicum.model.ProductCategory;
 import ru.yandex.practicum.model.QuantityState;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface StoreService {
