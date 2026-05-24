@@ -2,6 +2,7 @@ package ru.yandex.practicum.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.controller.shopping.store.StoreController;
 import ru.yandex.practicum.dto.ProductCategoryDto;
@@ -13,7 +14,6 @@ import ru.yandex.practicum.model.ProductCategory;
 import ru.yandex.practicum.model.mapper.ProductCategoryMapper;
 import ru.yandex.practicum.model.mapper.ProductMapper;
 import ru.yandex.practicum.service.StoreService;
-import org.springframework.data.domain.Page;
 
 import java.util.List;
 import java.util.UUID;

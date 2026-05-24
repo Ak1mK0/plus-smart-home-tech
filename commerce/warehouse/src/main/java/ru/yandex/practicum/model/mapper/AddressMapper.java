@@ -1,6 +1,5 @@
 package ru.yandex.practicum.model.mapper;
 
-import javax.annotation.processing.Generated;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.dto.AddressDto;
 import ru.yandex.practicum.model.Address;
@@ -9,17 +8,17 @@ import ru.yandex.practicum.model.Address;
 public class AddressMapper {
 
     public AddressDto toDto(Address address) {
-        if ( address == null ) {
+        if (address == null) {
             return null;
         }
 
         AddressDto.AddressDtoBuilder addressDto = AddressDto.builder();
 
-        addressDto.country( address.getCountry() );
-        addressDto.city( address.getCity() );
-        addressDto.street( address.getStreet() );
-        addressDto.house( address.getHouse() );
-        addressDto.flat( address.getFlat() );
+        addressDto.country(address.getCountry());
+        addressDto.city(address.getCity());
+        addressDto.street(address.getStreet());
+        addressDto.house(address.getHouse());
+        addressDto.flat(address.getFlat());
 
         return addressDto.build();
     }

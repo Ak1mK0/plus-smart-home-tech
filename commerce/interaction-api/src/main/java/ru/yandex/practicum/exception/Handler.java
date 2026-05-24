@@ -31,6 +31,13 @@ public class Handler {
         return new ErrorResponse("PRODUCT_NOT_FOUND", e.getMessage());
     }
 
+    @ExceptionHandler(NoProductsInShoppingCartException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleNoProductsInShoppingCartException(NoProductsInShoppingCartException e) {
+        log.error("Don't have such product in cart: {}", e.getMessage());
+        return new ErrorResponse("PRODUCT_NOT_FOUND", e.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleException(Exception e) {

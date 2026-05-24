@@ -1,10 +1,10 @@
 package ru.yandex.practicum.controller.shopping.store;
 
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.ProductCategoryDto;
 import ru.yandex.practicum.dto.ProductDto;
 import ru.yandex.practicum.dto.SetProductQuantityStateRequest;
-import org.springframework.data.domain.Page;
 
 import java.util.List;
 import java.util.UUID;

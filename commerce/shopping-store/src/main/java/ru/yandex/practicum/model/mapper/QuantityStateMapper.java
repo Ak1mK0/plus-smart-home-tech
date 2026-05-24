@@ -1,6 +1,5 @@
 package ru.yandex.practicum.model.mapper;
 
-import javax.annotation.processing.Generated;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.dto.QuantityStateDto;
 import ru.yandex.practicum.model.QuantityState;
@@ -9,7 +8,7 @@ import ru.yandex.practicum.model.QuantityState;
 public class QuantityStateMapper {
 
     public QuantityState toEntity(QuantityStateDto dto) {
-        if ( dto == null ) {
+        if (dto == null) {
             return null;
         }
 
@@ -23,7 +22,7 @@ public class QuantityStateMapper {
     }
 
     public QuantityStateDto toDto(QuantityState product) {
-        if ( product == null ) {
+        if (product == null) {
             return null;
         }
 

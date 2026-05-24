@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import ru.yandex.practicum.model.Product;
 import ru.yandex.practicum.model.ProductCategory;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface StoreRepository extends JpaRepository<Product, UUID> {
