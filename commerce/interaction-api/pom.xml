@@ -80,7 +80,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>ru.yandex.practicum.commerce.interaction-api.Api</mainClass>
+                    <mainClass>ru.yandex.practicum.Api</mainClass>
                     <classifier>exec</classifier>
                 </configuration>
                 <executions>

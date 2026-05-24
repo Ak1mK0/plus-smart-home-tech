@@ -95,7 +95,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>ru.yandex.practicum.commerce.shopping-cart.Cart</mainClass>
+                    <mainClass>ru.yandex.practicum.Cart</mainClass>
                 </configuration>
                 <executions>
                     <execution>
