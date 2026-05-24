@@ -1,7 +1,9 @@
 package ru.yandex.practicum.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.controller.warehouse.WarehouseController;
 import ru.yandex.practicum.dto.*;
@@ -18,6 +20,7 @@ import ru.yandex.practicum.service.WarehouseService;
 @RestController
 @RequestMapping("/api/v1/warehouse")
 @RequiredArgsConstructor
+@Validated
 public class WarehouseControllerImpl implements WarehouseController {
     private final WarehouseService warehouseService;
     private final AddressMapper addressMapper;
@@ -26,21 +29,21 @@ public class WarehouseControllerImpl implements WarehouseController {
 
     @Loggable
     @PutMapping
-    public void newProductInWarehouse(@RequestBody NewProductInWarehouseRequest dto) {
+    public void newProductInWarehouse(@RequestBody @Valid NewProductInWarehouseRequest dto) {
         Product product = productMapper.toEntity(dto);
         warehouseService.saveProductInWarehouse(product);
     }
 
     @Loggable
     @PostMapping("/check")
-    public BookedProductsDto checkAvailableAllProductInShoppingCart(@RequestBody ShoppingCartDto shoppingCart) {
+    public BookedProductsDto checkAvailableAllProductInShoppingCart(@RequestBody @Valid ShoppingCartDto shoppingCart) {
         BookedProducts bookedProducts = warehouseService.checkShoppingCart(shoppingCart.getProducts());
         return bookedProductsMapper.toDto(bookedProducts);
     }
 
     @Loggable
     @PostMapping("/add")
-    public void addQuantityInProduct(@RequestBody AddProductToWarehouseRequest productQuantity) {
+    public void addQuantityInProduct(@RequestBody @Valid AddProductToWarehouseRequest productQuantity) {
         warehouseService.addQuantityInProduct(productQuantity.getProductId(), productQuantity.getQuantity());
     }
 

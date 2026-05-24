@@ -1,5 +1,7 @@
 package ru.yandex.practicum.controller.shopping.store;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -20,18 +22,18 @@ public interface StoreController {
                                                direction = Sort.Direction.ASC) Pageable pageable);
 
     @PutMapping
-    ProductDto createNewProduct(@RequestBody ProductDto product);
+    ProductDto createNewProduct(@RequestBody @Valid ProductDto product);
 
     @PostMapping
-    ProductDto updateProductInfo(@RequestBody ProductDto product);
+    ProductDto updateProductInfo(@RequestBody @Valid ProductDto product);
 
     @PostMapping("/removeProductFromStore")
-    boolean removeProductFromStore(@RequestBody UUID productId);
+    boolean removeProductFromStore(@RequestBody @NotNull UUID productId);
 
     @PostMapping("/quantityState")
-    ProductDto changeQuantityState(@RequestParam UUID productId,
+    ProductDto changeQuantityState(@RequestParam @NotNull UUID productId,
                                    @RequestParam QuantityStateDto quantityState);
 
     @GetMapping("/{productId}")
-    ProductDto getProductInfo(@PathVariable UUID id);
+    ProductDto getProductInfo(@PathVariable @NotNull UUID id);
 }
