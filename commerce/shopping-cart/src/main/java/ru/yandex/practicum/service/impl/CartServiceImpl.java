@@ -11,10 +11,7 @@ import ru.yandex.practicum.model.ShoppingCartStatus;
 import ru.yandex.practicum.repository.CartRepository;
 import ru.yandex.practicum.service.CartService;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -34,21 +31,22 @@ public class CartServiceImpl implements CartService {
     @Loggable
     @Transactional
     public ShoppingCart putProductInCart(String username, Map<UUID, Integer> products) {
-        ShoppingCart shoppingCart = ShoppingCart.builder()
-                .username(username)
-                .products(new HashMap<>(products))
-                .shoppingCartStatus(ShoppingCartStatus.ACTIVATE)
-                .build();
+        ShoppingCart shoppingCart = cartRepository
+                .findByUsernameAndShoppingCartStatus(username, ShoppingCartStatus.ACTIVATE)
+                .orElseGet(() -> ShoppingCart.builder()
+                        .username(username)
+                        .shoppingCartStatus(ShoppingCartStatus.ACTIVATE)
+                        .products(new HashMap<>())
+                        .build());
+        shoppingCart.getProducts().putAll(products);
         return cartRepository.save(shoppingCart);
     }
 
     @Loggable
     @Transactional
     public void deleteShoppingCart(String username) {
-        if (!cartRepository.existsByUsernameAndShoppingCartStatus(username, ShoppingCartStatus.ACTIVATE)) {
-            throw new NoProductsInShoppingCartException("Shopping cart not exist");
-        }
-        ShoppingCart shoppingCart = cartRepository.findByUsernameAndShoppingCartStatus(username, ShoppingCartStatus.ACTIVATE);
+        ShoppingCart shoppingCart = cartRepository.findByUsernameAndShoppingCartStatus(username, ShoppingCartStatus.ACTIVATE)
+                .orElseThrow(() -> new NoProductsInShoppingCartException("Shopping cart not exist"));
         shoppingCart.setShoppingCartStatus(ShoppingCartStatus.DEACTIVATE);
         cartRepository.save(shoppingCart);
     }
