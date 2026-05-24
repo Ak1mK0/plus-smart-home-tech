@@ -45,6 +45,8 @@ public class StoreServiceImpl implements StoreService {
         }
     }
 
+    @Loggable
+    @Transactional
     public Product changeQuantityState(UUID productId, QuantityState quantityState) {
         Product product = storeRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException("Not found product with ID: " + productId));
