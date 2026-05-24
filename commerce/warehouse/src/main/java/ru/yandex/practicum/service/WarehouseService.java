@@ -1,17 +1,17 @@
 package ru.yandex.practicum.service;
 
 import ru.yandex.practicum.model.Address;
-import ru.yandex.practicum.model.BookedProduct;
+import ru.yandex.practicum.model.BookedProducts;
 import ru.yandex.practicum.model.Product;
-import ru.yandex.practicum.model.ShoppingCart;
 
+import java.util.Map;
 import java.util.UUID;
 
 public interface WarehouseService {
 
     Product saveProductInWarehouse(Product product);
 
-    BookedProduct checkShoppingCart(ShoppingCart cart);
+    BookedProducts checkShoppingCart(Map<UUID, Integer> products);
 
     void addQuantityInProduct(UUID id, int quantity);
 

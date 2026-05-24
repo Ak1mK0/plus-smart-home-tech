@@ -7,8 +7,10 @@ import ru.yandex.practicum.controller.warehouse.WarehouseController;
 import ru.yandex.practicum.dto.*;
 import ru.yandex.practicum.logging.Loggable;
 import ru.yandex.practicum.model.Address;
+import ru.yandex.practicum.model.BookedProducts;
 import ru.yandex.practicum.model.Product;
 import ru.yandex.practicum.model.mapper.AddressMapper;
+import ru.yandex.practicum.model.mapper.BookedProductsMapper;
 import ru.yandex.practicum.model.mapper.ProductMapper;
 import ru.yandex.practicum.service.WarehouseService;
 
@@ -20,6 +22,7 @@ public class WarehouseControllerImpl implements WarehouseController {
     private final WarehouseService warehouseService;
     private final AddressMapper addressMapper;
     private final ProductMapper productMapper;
+    private final BookedProductsMapper bookedProductsMapper;
 
     @Loggable
     @PutMapping
@@ -31,8 +34,8 @@ public class WarehouseControllerImpl implements WarehouseController {
     @Loggable
     @PostMapping("/check")
     public BookedProductsDto checkAvailableAllProductInShoppingCart(@RequestBody ShoppingCartDto shoppingCart) {
-        warehouseService.checkShoppingCart(null);
-        return null;
+        BookedProducts bookedProducts = warehouseService.checkShoppingCart(shoppingCart.getProducts());
+        return bookedProductsMapper.toDto(bookedProducts);
     }
 
     @Loggable

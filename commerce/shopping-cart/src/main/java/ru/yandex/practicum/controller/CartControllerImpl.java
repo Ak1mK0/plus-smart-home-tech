@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.controller.shopping.cart.CartController;
+import ru.yandex.practicum.controller.warehouse.feign.WarehouseControllerFeign;
+import ru.yandex.practicum.dto.BookedProductsDto;
 import ru.yandex.practicum.dto.ChangeProductQuantityRequest;
 import ru.yandex.practicum.dto.ShoppingCartDto;
 import ru.yandex.practicum.logging.Loggable;
@@ -21,6 +23,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CartControllerImpl implements CartController {
     private final CartService cartService;
+    private final WarehouseControllerFeign warehouseControllerFeign;
     private final ShoppingCartMapper shoppingCartMapper;
 
     @Loggable
@@ -34,6 +37,10 @@ public class CartControllerImpl implements CartController {
     @PutMapping
     public ShoppingCartDto putProductInCart(@RequestParam String username,
                                             @RequestBody Map<UUID, Integer> productCart) {
+        ShoppingCartDto shoppingCartDto = ShoppingCartDto.builder()
+                .products(productCart)
+                .build();
+        BookedProductsDto bookedProductsDto = warehouseControllerFeign.checkAvailableAllProductInShoppingCart(shoppingCartDto);
         ShoppingCart shoppingCart = cartService.putProductInCart(username, productCart);
         return shoppingCartMapper.toDto(shoppingCart);
     }
@@ -57,8 +64,8 @@ public class CartControllerImpl implements CartController {
     public ShoppingCartDto changeProductQuantityInCart(@RequestParam String username,
                                                        @RequestBody ChangeProductQuantityRequest request) {
         ShoppingCart shoppingCart = cartService.changeQuantityInShoppingCart(username,
-                                                                            request.getProductId(),
-                                                                            request.getNewQuantity());
+                request.getProductId(),
+                request.getNewQuantity());
         return shoppingCartMapper.toDto(shoppingCart);
     }
 

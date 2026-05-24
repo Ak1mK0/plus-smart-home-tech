@@ -7,10 +7,14 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.exception.NoProductsInShoppingCartException;
 import ru.yandex.practicum.logging.Loggable;
 import ru.yandex.practicum.model.ShoppingCart;
+import ru.yandex.practicum.model.ShoppingCartStatus;
 import ru.yandex.practicum.repository.CartRepository;
 import ru.yandex.practicum.service.CartService;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -21,6 +25,9 @@ public class CartServiceImpl implements CartService {
 
     @Loggable
     public ShoppingCart getUserProductCart(String username) {
+        if (!cartRepository.existsByUsername(username)) {
+            throw new NoProductsInShoppingCartException("Shopping cart with this product not exist");
+        }
         return cartRepository.findByUsername(username);
     }
 
@@ -30,6 +37,7 @@ public class CartServiceImpl implements CartService {
         ShoppingCart shoppingCart = ShoppingCart.builder()
                 .username(username)
                 .products(new HashMap<>(products))
+                .shoppingCartStatus(ShoppingCartStatus.ACTIVATE)
                 .build();
         return cartRepository.save(shoppingCart);
     }
@@ -37,7 +45,12 @@ public class CartServiceImpl implements CartService {
     @Loggable
     @Transactional
     public void deleteShoppingCart(String username) {
-        cartRepository.deleteByUsername(username);
+        if (!cartRepository.existsByUsernameAndShoppingCartStatus(username, ShoppingCartStatus.ACTIVATE)) {
+            throw new NoProductsInShoppingCartException("Shopping cart not exist");
+        }
+        ShoppingCart shoppingCart = cartRepository.findByUsernameAndShoppingCartStatus(username, ShoppingCartStatus.ACTIVATE);
+        shoppingCart.setShoppingCartStatus(ShoppingCartStatus.DEACTIVATE);
+        cartRepository.save(shoppingCart);
     }
 
     @Loggable

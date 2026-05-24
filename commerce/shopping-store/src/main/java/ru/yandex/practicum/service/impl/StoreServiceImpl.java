@@ -13,6 +13,7 @@ import ru.yandex.practicum.logging.Loggable;
 import ru.yandex.practicum.model.Product;
 import ru.yandex.practicum.model.ProductCategory;
 import ru.yandex.practicum.model.ProductState;
+import ru.yandex.practicum.model.QuantityState;
 import ru.yandex.practicum.repository.StoreRepository;
 import ru.yandex.practicum.service.StoreService;
 
@@ -42,6 +43,13 @@ public class StoreServiceImpl implements StoreService {
         } else {
             throw new ProductNotFoundException("Product with ID: " + product.getProductId() + "don't present");
         }
+    }
+
+    public Product changeQuantityState(UUID productId, QuantityState quantityState) {
+        Product product = storeRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException("Not found product with ID: " + productId));
+        product.setQuantityState(quantityState);
+        return storeRepository.save(product);
     }
 
     @Loggable

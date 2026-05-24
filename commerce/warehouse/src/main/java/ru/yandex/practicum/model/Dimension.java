@@ -18,4 +18,8 @@ public class Dimension {
     private double height;
     @Column(name = "depth", nullable = false)
     private double depth;
+
+    public double calculateVolume() {
+        return width * height * depth;
+    }
 }

@@ -4,7 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.ProductCategoryDto;
 import ru.yandex.practicum.dto.ProductDto;
-import ru.yandex.practicum.dto.SetProductQuantityStateRequest;
+import ru.yandex.practicum.dto.QuantityStateDto;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,7 +27,8 @@ public interface StoreController {
     boolean removeProductFromStore(@RequestBody UUID productId);
 
     @PostMapping("/quantityState")
-    boolean changeQuantityState(@RequestBody SetProductQuantityStateRequest quantityState);
+    ProductDto changeQuantityState(@RequestParam UUID productId,
+                                   @RequestParam QuantityStateDto quantityState);
 
     @GetMapping("/{productId}")
     ProductDto getProductInfo(@PathVariable UUID id);

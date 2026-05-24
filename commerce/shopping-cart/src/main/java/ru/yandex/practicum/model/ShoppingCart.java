@@ -26,6 +26,9 @@ public class ShoppingCart {
     @MapKeyColumn(name = "product_id")
     @Column(name = "quantity")
     private Map<UUID, Integer> products;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "shopping_cart_status")
+    private ShoppingCartStatus shoppingCartStatus;
 
     @PrePersist
     public void generateShoppingCartId() {
