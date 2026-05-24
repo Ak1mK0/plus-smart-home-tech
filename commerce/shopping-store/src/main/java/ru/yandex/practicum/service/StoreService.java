@@ -1,6 +1,7 @@
 package ru.yandex.practicum.service;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import ru.yandex.practicum.model.Product;
 import ru.yandex.practicum.model.ProductCategory;
 import ru.yandex.practicum.model.QuantityState;
@@ -21,7 +22,5 @@ public interface StoreService {
     Product changeQuantityState(UUID productId, QuantityState quantityState);
 
     Page<Product> getListOfProducts(ProductCategory category,
-                                    int page,
-                                    int size,
-                                    List<String> sorts);
+                                    Pageable pageable);
 }

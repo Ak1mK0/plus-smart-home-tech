@@ -1,6 +1,9 @@
 package ru.yandex.practicum.fallback.shopping.store;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,9 +21,8 @@ public class StoreControllerFallback implements StoreControllerFeign {
 
     @Override
     public Page<ProductDto> getListOfProducts(@RequestParam ProductCategoryDto category,
-                                              @RequestParam int page,
-                                              @RequestParam int size,
-                                              @RequestParam List<String> sort) {
+                                              @PageableDefault(size = 20, sort = "productName",
+                                                      direction = Sort.Direction.ASC) Pageable pageable) {
         return null;
     }
 
