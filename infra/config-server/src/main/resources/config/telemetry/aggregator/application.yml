@@ -17,8 +17,6 @@ spring:
 
 logging:
   level:
-    #    io.grpc: DEBUG
-    #    net.devh.boot.grpc: DEBUG
     ru:
       yandex:
         practicum:
