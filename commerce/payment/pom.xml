@@ -95,7 +95,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>ru.yandex.practicum.Payment</mainClass>
+                    <mainClass>ru.yandex.practicum.PaymentApp</mainClass>
                 </configuration>
                 <executions>
                     <execution>

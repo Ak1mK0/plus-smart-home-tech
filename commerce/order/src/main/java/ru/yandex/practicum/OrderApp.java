@@ -4,8 +4,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class Payment {
+public class OrderApp {
     public static void main( String[] args ) {
-        SpringApplication.run(Payment.class);
+        SpringApplication.run(OrderApp.class);
     }
 }

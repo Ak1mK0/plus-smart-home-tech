@@ -95,7 +95,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>ru.yandex.practicum.Delivery</mainClass>
+                    <mainClass>ru.yandex.practicum.DeliveryApp</mainClass>
                 </configuration>
                 <executions>
                     <execution>
