@@ -16,12 +16,13 @@ import java.util.UUID;
 @Builder
 public class Delivery {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "delivery_id", nullable = false)
     private UUID deliveryId;
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "from_address", nullable = false)
     private Address fromAddress;
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "to_address", nullable = false)
     private Address toAddress;
     @Column(name = "order_id", nullable = false)

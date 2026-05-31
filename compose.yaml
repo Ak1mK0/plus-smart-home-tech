@@ -106,7 +106,7 @@ services:
     image: postgres:16.1
     container_name: delivery-db
     volumes:
-      - ./commerce/warehouse/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
+      - ./commerce/delivery/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
     ports:
       - "5436:5432"
     environment:
@@ -123,7 +123,7 @@ services:
     image: postgres:16.1
     container_name: order-db
     volumes:
-      - ./commerce/warehouse/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
+      - ./commerce/order/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
     ports:
       - "5437:5432"
     environment:
@@ -140,7 +140,7 @@ services:
     image: postgres:16.1
     container_name: payment-db
     volumes:
-      - ./commerce/warehouse/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
+      - ./commerce/payment/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
     ports:
       - "5438:5432"
     environment:

@@ -1,5 +1,6 @@
 package ru.yandex.practicum.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -20,12 +21,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Validated
 public class DeliveryControllerImpl implements DeliveryController {
-    DeliveryServiceImpl deliveryService;
-    DeliveryMapper deliveryMapper;
+    final DeliveryServiceImpl deliveryService;
+    final DeliveryMapper deliveryMapper;
 
     @Loggable
     @PutMapping
-    public DeliveryDto createNewDelivery(@RequestBody DeliveryDto deliveryDto) {
+    public DeliveryDto createNewDelivery(@RequestBody @Valid DeliveryDto deliveryDto) {
         Delivery delivery = deliveryMapper.toEntity(deliveryDto);
         delivery = deliveryService.createNewDelivery(delivery);
         return deliveryMapper.toDto(delivery);

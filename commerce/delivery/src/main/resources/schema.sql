@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS Address (
     street VARCHAR(50) NOT NULL,
     house VARCHAR(50) NOT NULL,
     flat VARCHAR(50) NOT NULL
-)
+);
 
 CREATE TABLE IF NOT EXISTS Delivery (
     delivery_id UUID PRIMARY KEY,

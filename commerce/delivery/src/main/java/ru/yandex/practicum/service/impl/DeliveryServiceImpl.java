@@ -19,7 +19,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class DeliveryServiceImpl implements DeliveryService {
-    DeliveryRepository deliveryRepository;
+    final DeliveryRepository deliveryRepository;
 
     @Loggable
     @Transactional
