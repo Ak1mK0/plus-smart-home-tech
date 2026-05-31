@@ -1,0 +1,3 @@
+CREATE TABLE IF NOT EXISTS Payment (
+    id UUID PRIMARY KEY
+);
