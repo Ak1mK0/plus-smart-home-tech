@@ -69,7 +69,7 @@ public class WarehouseControllerImpl implements WarehouseController {
         warehouseService.returnProductsInWarehous(products);
     }
 
-    @PostMapping("assembly")
+    @PostMapping("/assembly")
     public BookedProductsDto assemblyProductsForDelivery(@RequestBody @Valid AssemblyProductsForOrderRequest request) {
         BookedProducts bookedProducts = warehouseService.assemblyProductsForDelivery(request.getProducts());
         return bookedProductsMapper.toDto(bookedProducts);

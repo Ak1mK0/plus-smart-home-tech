@@ -64,22 +64,24 @@ public class WarehouseServiceImpl implements WarehouseService {
     }
 
     @Loggable
+    @Transactional
     public void returnProductsInWarehous(Map<UUID, Integer> products) {
         List<Product> productListFromWarehouse = checkAvailableAndGetListOfProducts(products.keySet());
         productListFromWarehouse.forEach(product -> {
             product.setQuantity(product.getQuantity() + products.get(product.getProductId()));
         });
-        saveAllProductsInWarehous(productListFromWarehouse);
+        warehouseRepository.saveAll(productListFromWarehouse);
     }
 
     @Loggable
+    @Transactional
     public BookedProducts assemblyProductsForDelivery(Map<UUID, Integer> products) {
         List<Product> productListFromWarehouse = checkAvailableAndGetListOfProducts(products.keySet());
         BookedProducts bookedProducts = createBookedProductsFromListOfProducts(productListFromWarehouse, products);
         productListFromWarehouse.forEach(product -> {
             product.setQuantity(product.getQuantity() - products.get(product.getProductId()));
         });
-        saveAllProductsInWarehous(productListFromWarehouse);
+        warehouseRepository.saveAll(productListFromWarehouse);
         return bookedProducts;
     }
 
@@ -88,7 +90,7 @@ public class WarehouseServiceImpl implements WarehouseService {
         if (productListFromWarehouse.size() != productId.size()) {
             throw new ProductInShoppingCartLowQuantityInWarehouse("Not enough product positions in warehouse");
         }
-        return  productListFromWarehouse;
+        return productListFromWarehouse;
     }
 
     private BookedProducts createBookedProductsFromListOfProducts(List<Product> productListFromWarehouse,
@@ -102,17 +104,14 @@ public class WarehouseServiceImpl implements WarehouseService {
             if (product.getQuantity() < productsFromCart.get(product.getProductId())) {
                 throw new ProductInShoppingCartLowQuantityInWarehouse("Not enough products in warehouse");
             }
-            bookedProducts.setDeliveryVolume(bookedProducts.getDeliveryVolume() + product.getWeight());
-            bookedProducts.setDeliveryWeight(bookedProducts.getDeliveryWeight() + product.getDimension().calculateVolume());
+            bookedProducts.setDeliveryWeight(bookedProducts.getDeliveryWeight() +
+                    product.getWeight() * productsFromCart.get(product.getProductId()));
+            bookedProducts.setDeliveryVolume(bookedProducts.getDeliveryVolume() +
+                    product.getDimension().calculateVolume() * productsFromCart.get(product.getProductId()));
             if (!bookedProducts.isFragile() && product.isFragile()) {
                 bookedProducts.setFragile(true);
             }
         }
         return bookedProducts;
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    private void saveAllProductsInWarehous(List<Product> products) {
-        warehouseRepository.saveAll(products);
     }
 }
