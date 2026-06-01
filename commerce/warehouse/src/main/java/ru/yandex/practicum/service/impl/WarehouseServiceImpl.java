@@ -3,6 +3,7 @@ package ru.yandex.practicum.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.exception.NoSpecifiedProductInWarehouseException;
 import ru.yandex.practicum.exception.ProductInShoppingCartLowQuantityInWarehouse;
@@ -16,6 +17,7 @@ import ru.yandex.practicum.service.WarehouseService;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -37,26 +39,8 @@ public class WarehouseServiceImpl implements WarehouseService {
 
     @Loggable
     public BookedProducts checkShoppingCart(Map<UUID, Integer> productsFromCart) {
-        List<Product> productListFromWarehouse = warehouseRepository.findAllById(productsFromCart.keySet());
-        if (productListFromWarehouse.size() != productsFromCart.size()) {
-            throw new ProductInShoppingCartLowQuantityInWarehouse("Not enough products in warehouse");
-        }
-        BookedProducts bookedProducts = BookedProducts.builder()
-                .fragile(false)
-                .deliveryVolume(0.0)
-                .deliveryWeight(0.0)
-                .build();
-        for (Product product : productListFromWarehouse) {
-            if (product.getQuantity() < productsFromCart.get(product.getProductId())) {
-                throw new ProductInShoppingCartLowQuantityInWarehouse("Not enough products in warehouse");
-            }
-            bookedProducts.setDeliveryVolume(bookedProducts.getDeliveryVolume() + product.getWeight());
-            bookedProducts.setDeliveryWeight(bookedProducts.getDeliveryWeight() + product.getDimension().calculateVolume());
-            if (!bookedProducts.isFragile() && product.isFragile()) {
-                bookedProducts.setFragile(true);
-            }
-        }
-        return bookedProducts;
+        List<Product> productListFromWarehouse = checkAvailableAndGetListOfProducts(productsFromCart.keySet());
+        return createBookedProductsFromListOfProducts(productListFromWarehouse, productsFromCart);
     }
 
     @Loggable
@@ -77,5 +61,58 @@ public class WarehouseServiceImpl implements WarehouseService {
                 .house("House")
                 .flat("Flat")
                 .build();
+    }
+
+    @Loggable
+    public void returnProductsInWarehous(Map<UUID, Integer> products) {
+        List<Product> productListFromWarehouse = checkAvailableAndGetListOfProducts(products.keySet());
+        productListFromWarehouse.forEach(product -> {
+            product.setQuantity(product.getQuantity() + products.get(product.getProductId()));
+        });
+        saveAllProductsInWarehous(productListFromWarehouse);
+    }
+
+    @Loggable
+    public BookedProducts assemblyProductsForDelivery(Map<UUID, Integer> products) {
+        List<Product> productListFromWarehouse = checkAvailableAndGetListOfProducts(products.keySet());
+        BookedProducts bookedProducts = createBookedProductsFromListOfProducts(productListFromWarehouse, products);
+        productListFromWarehouse.forEach(product -> {
+            product.setQuantity(product.getQuantity() - products.get(product.getProductId()));
+        });
+        saveAllProductsInWarehous(productListFromWarehouse);
+        return bookedProducts;
+    }
+
+    private List<Product> checkAvailableAndGetListOfProducts(Set<UUID> productId) {
+        List<Product> productListFromWarehouse = warehouseRepository.findAllById(productId);
+        if (productListFromWarehouse.size() != productId.size()) {
+            throw new ProductInShoppingCartLowQuantityInWarehouse("Not enough product positions in warehouse");
+        }
+        return  productListFromWarehouse;
+    }
+
+    private BookedProducts createBookedProductsFromListOfProducts(List<Product> productListFromWarehouse,
+                                                                  Map<UUID, Integer> productsFromCart) {
+        BookedProducts bookedProducts = BookedProducts.builder()
+                .fragile(false)
+                .deliveryVolume(0.0)
+                .deliveryWeight(0.0)
+                .build();
+        for (Product product : productListFromWarehouse) {
+            if (product.getQuantity() < productsFromCart.get(product.getProductId())) {
+                throw new ProductInShoppingCartLowQuantityInWarehouse("Not enough products in warehouse");
+            }
+            bookedProducts.setDeliveryVolume(bookedProducts.getDeliveryVolume() + product.getWeight());
+            bookedProducts.setDeliveryWeight(bookedProducts.getDeliveryWeight() + product.getDimension().calculateVolume());
+            if (!bookedProducts.isFragile() && product.isFragile()) {
+                bookedProducts.setFragile(true);
+            }
+        }
+        return bookedProducts;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    private void saveAllProductsInWarehous(List<Product> products) {
+        warehouseRepository.saveAll(products);
     }
 }

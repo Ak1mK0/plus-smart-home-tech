@@ -16,4 +16,8 @@ public interface WarehouseService {
     void addQuantityInProduct(UUID id, int quantity);
 
     Address getWarehouseAddress();
+
+    void returnProductsInWarehous(Map<UUID, Integer> products);
+
+    BookedProducts assemblyProductsForDelivery(Map<UUID, Integer> products);
 }

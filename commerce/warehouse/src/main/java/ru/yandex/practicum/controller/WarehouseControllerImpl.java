@@ -1,6 +1,8 @@
 package ru.yandex.practicum.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -15,6 +17,9 @@ import ru.yandex.practicum.model.mapper.AddressMapper;
 import ru.yandex.practicum.model.mapper.BookedProductsMapper;
 import ru.yandex.practicum.model.mapper.ProductMapper;
 import ru.yandex.practicum.service.WarehouseService;
+
+import java.util.Map;
+import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -52,5 +57,21 @@ public class WarehouseControllerImpl implements WarehouseController {
     public AddressDto getWarehouseAddress() {
         Address address = warehouseService.getWarehouseAddress();
         return addressMapper.toDto(address);
+    }
+
+    @PostMapping("/shipped")
+    public void shippedInDelivery(@RequestBody @Valid ShippedToDeliveryRequest request) {
+
+    }
+
+    @PostMapping("/return")
+    public void returnProductsInWarehous(@RequestBody Map<@NotNull UUID, @PositiveOrZero Integer> products) {
+        warehouseService.returnProductsInWarehous(products);
+    }
+
+    @PostMapping("assembly")
+    public BookedProductsDto assemblyProductsForDelivery(@RequestBody @Valid AssemblyProductsForOrderRequest request) {
+        BookedProducts bookedProducts = warehouseService.assemblyProductsForDelivery(request.getProducts());
+        return bookedProductsMapper.toDto(bookedProducts);
     }
 }
