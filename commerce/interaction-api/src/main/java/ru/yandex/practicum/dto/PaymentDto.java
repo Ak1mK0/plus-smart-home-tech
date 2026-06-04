@@ -1,0 +1,20 @@
+package ru.yandex.practicum.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.UUID;
+
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class PaymentDto {
+    private UUID paymentId;
+    private double totalPayment;
+    private double deliveryTotal;
+    private double feeTotal;
+    private PaymentStatusDto paymentStatusDto;
+}

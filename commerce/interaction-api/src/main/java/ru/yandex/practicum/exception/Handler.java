@@ -45,6 +45,20 @@ public class Handler {
         return new ErrorResponse("DELIVERY_NOT_FOUND", e.getMessage());
     }
 
+    @ExceptionHandler(NotEnoughInfoInOrderToCalculateException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleNotEnoughInfoInOrderToCalculateException(NotEnoughInfoInOrderToCalculateException e) {
+        log.error("Not enough info: {}", e.getMessage());
+        return new ErrorResponse("NOT_ENOUGH_INFO", e.getMessage());
+    }
+
+    @ExceptionHandler(NoOrderFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleNoOrderFoundException(NoOrderFoundException e) {
+        log.error("Order not found: {}", e.getMessage());
+        return new ErrorResponse("ORDER_NOT_FOUND", e.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleException(Exception e) {
