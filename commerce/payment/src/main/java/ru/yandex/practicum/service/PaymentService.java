@@ -4,21 +4,24 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.dto.OrderDto;
 import ru.yandex.practicum.dto.PaymentDto;
+import ru.yandex.practicum.dto.ProductDto;
 import ru.yandex.practicum.logging.Loggable;
 import ru.yandex.practicum.model.Payment;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface PaymentService {
 
 
-    Payment createPayment(@RequestBody Payment payment);
+    Payment createPayment(Payment payment);
 
-    double calculateTotalCost(@RequestBody OrderDto order);
+    double calculateTotalCost(double deliveryPrice, double productsPrice);
 
-    void successPayment(@RequestBody UUID orderId);
+    void successPayment(UUID orderId);
 
-    double calculateProductCost(@RequestBody OrderDto order);
+    double calculateProductCost(List<ProductDto> products, Map<UUID, Integer> productsQuantity);
 
-    void failedPayment(@RequestBody UUID orderId);
+    void failedPayment(UUID orderId);
 }

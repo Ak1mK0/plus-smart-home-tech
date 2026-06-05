@@ -8,14 +8,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.controller.payment.PaymentController;
+import ru.yandex.practicum.controller.shopping.store.feign.StoreControllerFeign;
 import ru.yandex.practicum.dto.OrderDto;
 import ru.yandex.practicum.dto.PaymentDto;
+import ru.yandex.practicum.dto.ProductDto;
 import ru.yandex.practicum.logging.Loggable;
 import ru.yandex.practicum.model.Payment;
 import ru.yandex.practicum.model.PaymentStatus;
 import ru.yandex.practicum.model.mapper.PaymentMapper;
 import ru.yandex.practicum.service.PaymentService;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -26,6 +29,7 @@ import java.util.UUID;
 public class PaymentControllerImpl implements PaymentController {
     private final PaymentService paymentService;
     private final PaymentMapper paymentMapper;
+    private final StoreControllerFeign storeControllerFeign;
 
     @Loggable
     @PostMapping
@@ -44,19 +48,22 @@ public class PaymentControllerImpl implements PaymentController {
     @Loggable
     @PostMapping("/totalCost")
     public double calculateTotalCost(@RequestBody OrderDto order) {
-        return 0;
+        return paymentService.calculateTotalCost(order.getDeliveryPrice(), order.getProductPrice());
+    }
+
+    @Loggable
+    @PostMapping("/productCost")
+    public double calculateProductCost(@RequestBody OrderDto order) {
+        List<UUID> orderList = order.getProducts().keySet().stream()
+                .toList();
+        List<ProductDto> products = storeControllerFeign.getAllProductsFromList(orderList);
+        return paymentService.calculateProductCost(products, order.getProducts());
     }
 
     @Loggable
     @PostMapping("/refund")
     public void successPayment(@RequestBody UUID orderId) {
         paymentService.successPayment(orderId);
-    }
-
-    @Loggable
-    @PostMapping("/productCost")
-    public double calculateProductCost(@RequestBody OrderDto order) {
-        return 0;
     }
 
     @Loggable
