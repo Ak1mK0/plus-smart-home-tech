@@ -20,6 +20,7 @@ public interface StoreController {
     Page<ProductDto> getListOfProducts(@RequestParam ProductCategoryDto category,
                                        @PageableDefault(size = 20, sort = "productName",
                                                direction = Sort.Direction.ASC) Pageable pageable);
+
     @PostMapping("/getAll")
     List<ProductDto> getAllProductsFromList(@RequestBody List<UUID> productsId);
 

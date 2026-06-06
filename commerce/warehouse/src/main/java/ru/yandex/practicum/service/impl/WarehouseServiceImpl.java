@@ -3,7 +3,6 @@ package ru.yandex.practicum.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.exception.NoSpecifiedProductInWarehouseException;
 import ru.yandex.practicum.exception.ProductInShoppingCartLowQuantityInWarehouse;
@@ -12,13 +11,12 @@ import ru.yandex.practicum.logging.Loggable;
 import ru.yandex.practicum.model.Address;
 import ru.yandex.practicum.model.BookedProducts;
 import ru.yandex.practicum.model.Product;
+import ru.yandex.practicum.model.ShippedDelivery;
+import ru.yandex.practicum.repository.ShippedRepository;
 import ru.yandex.practicum.repository.WarehouseRepository;
 import ru.yandex.practicum.service.WarehouseService;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -26,6 +24,25 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 public class WarehouseServiceImpl implements WarehouseService {
     private final WarehouseRepository warehouseRepository;
+    private final ShippedRepository shippedRepository;
+
+    private final Random random = new Random();
+    private final Address[] addresses = new Address[]{
+            Address.builder()
+                    .country("ADDRESS_1")
+                    .city("ADDRESS_1")
+                    .street("ADDRESS_1")
+                    .house("ADDRESS_1")
+                    .flat("ADDRESS_1")
+                    .build(),
+            Address.builder()
+                    .country("ADDRESS_2")
+                    .city("ADDRESS_2")
+                    .street("ADDRESS_2")
+                    .house("ADDRESS_2")
+                    .flat("ADDRESS_2")
+                    .build()
+    };
 
     @Loggable
     @Transactional
@@ -54,13 +71,7 @@ public class WarehouseServiceImpl implements WarehouseService {
 
     @Loggable
     public Address getWarehouseAddress() {
-        return Address.builder()
-                .country("Country")
-                .city("City")
-                .street("Street")
-                .house("House")
-                .flat("Flat")
-                .build();
+        return addresses[random.nextInt(addresses.length)];
     }
 
     @Loggable
@@ -83,6 +94,16 @@ public class WarehouseServiceImpl implements WarehouseService {
         });
         warehouseRepository.saveAll(productListFromWarehouse);
         return bookedProducts;
+    }
+
+    @Loggable
+    @Transactional
+    public void shippedInDelivery(UUID orderId, UUID deliveryId) {
+        ShippedDelivery shippedDelivery = ShippedDelivery.builder()
+                .orderId(orderId)
+                .deliveryId(deliveryId)
+                .build();
+        shippedRepository.save(shippedDelivery);
     }
 
     private List<Product> checkAvailableAndGetListOfProducts(Set<UUID> productId) {

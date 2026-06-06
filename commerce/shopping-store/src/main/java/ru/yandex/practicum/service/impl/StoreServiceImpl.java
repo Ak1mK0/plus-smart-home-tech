@@ -6,7 +6,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.dto.ProductDto;
 import ru.yandex.practicum.exception.ProductNotFoundException;
 import ru.yandex.practicum.logging.Loggable;
 import ru.yandex.practicum.model.Product;

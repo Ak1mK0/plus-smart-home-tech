@@ -56,6 +56,6 @@ public class DeliveryControllerImpl implements DeliveryController {
     @Loggable
     @PostMapping("/cost")
     public double deliveryCostCalculation(@RequestBody OrderDto order) {
-        return 0;
+        return deliveryService.calculateDeliveryCost(order);
     }
 }

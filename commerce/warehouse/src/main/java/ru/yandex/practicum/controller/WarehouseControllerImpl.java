@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.controller.order.feign.OrderControllerFeign;
 import ru.yandex.practicum.controller.warehouse.WarehouseController;
 import ru.yandex.practicum.dto.*;
 import ru.yandex.practicum.logging.Loggable;
@@ -31,6 +32,7 @@ public class WarehouseControllerImpl implements WarehouseController {
     private final AddressMapper addressMapper;
     private final ProductMapper productMapper;
     private final BookedProductsMapper bookedProductsMapper;
+    private final OrderControllerFeign orderControllerFeign;
 
     @Loggable
     @PutMapping
@@ -61,7 +63,7 @@ public class WarehouseControllerImpl implements WarehouseController {
 
     @PostMapping("/shipped")
     public void shippedInDelivery(@RequestBody @Valid ShippedToDeliveryRequest request) {
-
+        warehouseService.shippedInDelivery(request.getOrderId(), request.getDeliveryId());
     }
 
     @PostMapping("/return")

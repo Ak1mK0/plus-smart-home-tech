@@ -1,6 +1,5 @@
 package ru.yandex.practicum.model.mapper;
 
-import javax.annotation.processing.Generated;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.dto.StateDto;
 import ru.yandex.practicum.model.State;
@@ -9,7 +8,7 @@ import ru.yandex.practicum.model.State;
 public class StateMapper {
 
     public State toEntity(StateDto dto) {
-        if ( dto == null ) {
+        if (dto == null) {
             return null;
         }
 
@@ -32,7 +31,7 @@ public class StateMapper {
     }
 
     public StateDto toDto(State state) {
-        if ( state == null ) {
+        if (state == null) {
             return null;
         }
 

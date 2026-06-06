@@ -20,4 +20,6 @@ public interface WarehouseService {
     void returnProductsInWarehous(Map<UUID, Integer> products);
 
     BookedProducts assemblyProductsForDelivery(Map<UUID, Integer> products);
+
+    void shippedInDelivery(UUID orderId, UUID deliveryId);
 }

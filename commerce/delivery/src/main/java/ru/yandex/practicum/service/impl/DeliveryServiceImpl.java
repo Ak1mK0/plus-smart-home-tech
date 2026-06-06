@@ -56,8 +56,16 @@ public class DeliveryServiceImpl implements DeliveryService {
     }
 
     @Loggable
-    public double calculateDeliveryCost(OrderDto dto) {
-        return 0;
+    public double calculateDeliveryCost(OrderDto order) {
+        Delivery delivery = deliveryRepository.findById(order.getDeliveryId())
+                .orElseThrow(() -> new NoDeliveryFoundException("Delivery with ID: " + order.getDeliveryId() + " does not exist"));
+
+        return 5.0
+                * (delivery.getFromAddress().getCity().equalsIgnoreCase("ADDRESS_2") ? 2 : 1)
+                * (order.isFragile() ? 1.2 : 1)
+                + order.getDeliveryWeight() * 0.3
+                + order.getDeliveryVolume() * 0.2
+                * (delivery.getFromAddress().getStreet().equalsIgnoreCase(delivery.getToAddress().getStreet()) ? 1 : 1.2);
     }
 
     @Loggable

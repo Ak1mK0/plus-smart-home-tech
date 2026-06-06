@@ -1,5 +1,6 @@
 package ru.yandex.practicum.controller.order;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -14,7 +15,7 @@ import java.util.UUID;
 public interface OrderController {
 
     @GetMapping
-    List<OrderDto> getAllUserOrders(@RequestParam String username,
+    Page<OrderDto> getAllUserOrders(@RequestParam String username,
                                     @PageableDefault(size = 20, sort = "username",
                                             direction = Sort.Direction.ASC) Pageable pageable);
 

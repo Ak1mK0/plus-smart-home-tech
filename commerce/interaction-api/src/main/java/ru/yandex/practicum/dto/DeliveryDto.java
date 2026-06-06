@@ -1,7 +1,10 @@
 package ru.yandex.practicum.dto;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
@@ -16,6 +19,5 @@ public class DeliveryDto {
     private AddressDto toAddress;
     @NotNull(message = "ID заказа обязателен")
     private UUID orderId;
-    @NotNull(message = "Статус продукта не может быть пустым")
     private DeliveryStateDto deliveryState;
 }
