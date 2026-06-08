@@ -18,6 +18,7 @@ import ru.yandex.practicum.model.PaymentStatus;
 import ru.yandex.practicum.model.mapper.PaymentMapper;
 import ru.yandex.practicum.service.PaymentService;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,7 +39,7 @@ public class PaymentControllerImpl implements PaymentController {
                 .paymentId(order.getPaymentId())
                 .totalPayment(order.getTotalPrice())
                 .deliveryTotal(order.getDeliveryPrice())
-                .feeTotal(order.getTotalPrice() - order.getDeliveryPrice() - order.getProductPrice())
+                .feeTotal(order.getTotalPrice().subtract(order.getDeliveryPrice()).subtract(order.getProductPrice()))
                 .paymentStatus(PaymentStatus.PENDING)
                 .build();
         payment = paymentService.createPayment(payment);
@@ -47,7 +48,7 @@ public class PaymentControllerImpl implements PaymentController {
 
     @Loggable
     @PostMapping("/totalCost")
-    public double calculateTotalCost(@RequestBody OrderDto order) {
+    public BigDecimal calculateTotalCost(@RequestBody OrderDto order) {
         return paymentService.calculateTotalCost(order.getDeliveryPrice(), order.getProductPrice());
     }
 

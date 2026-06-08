@@ -19,6 +19,7 @@ import ru.yandex.practicum.model.State;
 import ru.yandex.practicum.model.mapper.OrderMapper;
 import ru.yandex.practicum.service.OrderService;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Slf4j
@@ -83,7 +84,7 @@ public class OrderControllerImpl implements OrderController {
         Order order = orderService.getOrderById(orderId);
         OrderDto orderDto = orderMapper.toDto(order);
 
-        double totalPrice = paymentControllerFeign.calculateTotalCost(orderDto);
+        BigDecimal totalPrice = paymentControllerFeign.calculateTotalCost(orderDto);
         order.setTotalPrice(totalPrice);
         order = orderService.updateOrder(order);
 
@@ -96,7 +97,7 @@ public class OrderControllerImpl implements OrderController {
         Order order = orderService.getOrderById(orderId);
 
         OrderDto orderDto = orderMapper.toDto(order);
-        double deliveryCost = deliveryControllerFeign.deliveryCostCalculation(orderDto);
+        BigDecimal deliveryCost = deliveryControllerFeign.deliveryCostCalculation(orderDto);
 
         order.setDeliveryPrice(deliveryCost);
         order = orderService.updateOrder(order);

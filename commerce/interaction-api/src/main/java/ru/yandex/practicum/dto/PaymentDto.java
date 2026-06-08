@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
@@ -13,8 +14,8 @@ import java.util.UUID;
 @NoArgsConstructor
 public class PaymentDto {
     private UUID paymentId;
-    private double totalPayment;
-    private double deliveryTotal;
-    private double feeTotal;
+    private BigDecimal totalPayment;
+    private BigDecimal deliveryTotal;
+    private BigDecimal feeTotal;
     private PaymentStatusDto paymentStatusDto;
 }

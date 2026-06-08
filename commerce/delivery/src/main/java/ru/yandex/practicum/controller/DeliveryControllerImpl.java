@@ -13,16 +13,16 @@ import ru.yandex.practicum.model.Delivery;
 import ru.yandex.practicum.model.mapper.DeliveryMapper;
 import ru.yandex.practicum.service.impl.DeliveryServiceImpl;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/delivery")
 @RequiredArgsConstructor
-@Validated
 public class DeliveryControllerImpl implements DeliveryController {
-    final DeliveryServiceImpl deliveryService;
-    final DeliveryMapper deliveryMapper;
+    private final DeliveryServiceImpl deliveryService;
+    private final DeliveryMapper deliveryMapper;
 
     @Loggable
     @PutMapping
@@ -55,7 +55,7 @@ public class DeliveryControllerImpl implements DeliveryController {
 
     @Loggable
     @PostMapping("/cost")
-    public double deliveryCostCalculation(@RequestBody OrderDto order) {
+    public BigDecimal deliveryCostCalculation(@RequestBody OrderDto order) {
         return deliveryService.calculateDeliveryCost(order);
     }
 }

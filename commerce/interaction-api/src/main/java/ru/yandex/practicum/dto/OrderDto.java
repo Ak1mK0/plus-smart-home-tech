@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.UUID;
 
@@ -27,7 +28,7 @@ public class OrderDto {
     private double deliveryWeight;
     private double deliveryVolume;
     private boolean fragile;
-    private double totalPrice;
-    private double deliveryPrice;
-    private double productPrice;
+    private BigDecimal totalPrice;
+    private BigDecimal deliveryPrice;
+    private BigDecimal productPrice;
 }

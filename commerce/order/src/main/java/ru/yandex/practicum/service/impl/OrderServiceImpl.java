@@ -15,6 +15,7 @@ import ru.yandex.practicum.model.State;
 import ru.yandex.practicum.repository.OrderRepository;
 import ru.yandex.practicum.service.OrderService;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Slf4j
@@ -45,9 +46,9 @@ public class OrderServiceImpl implements OrderService {
                 .deliveryWeight(bookedProducts.getDeliveryWeight())
                 .deliveryVolume(bookedProducts.getDeliveryVolume())
                 .fragile(bookedProducts.isFragile())
-                .totalPrice(0.0)
-                .deliveryPrice(0.0)
-                .productPrice(0.0)
+                .totalPrice(new BigDecimal("0"))
+                .deliveryPrice(new BigDecimal("0"))
+                .productPrice(new BigDecimal("0"))
                 .build();
         return orderRepository.save(order);
     }

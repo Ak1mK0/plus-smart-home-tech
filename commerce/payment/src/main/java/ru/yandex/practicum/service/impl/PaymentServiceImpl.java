@@ -14,6 +14,7 @@ import ru.yandex.practicum.model.PaymentStatus;
 import ru.yandex.practicum.repository.PaymentRepository;
 import ru.yandex.practicum.service.PaymentService;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -32,8 +33,11 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Loggable
-    public double calculateTotalCost(double deliveryPrice, double productsPrice) {
-        return productsPrice * 0.1 + productsPrice + deliveryPrice;
+    public BigDecimal calculateTotalCost(BigDecimal deliveryPrice, BigDecimal productsPrice) {
+        return new BigDecimal(String.valueOf(productsPrice))
+                .multiply(new BigDecimal("0.1"))
+                .add(new BigDecimal(String.valueOf(productsPrice)))
+                .add(new BigDecimal(String.valueOf(deliveryPrice)));
     }
 
     @Loggable
