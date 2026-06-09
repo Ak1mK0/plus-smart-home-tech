@@ -1,0 +1,3345 @@
+{
+  "info": {
+    "_postman_id": "abd97f29-1f4f-4819-8038-fe77933a686b",
+    "name": "(Sprint 22) Delivery, order, payment",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "49222565",
+    "_collection_link": "https://go.postman.co/collection/49222565-abd97f29-1f4f-4819-8038-fe77933a686b?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "delivery",
+      "item": [
+        {
+          "name": "Проверка запуска delivery",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/delivery/actuator/health",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "delivery",
+                "actuator",
+                "health"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Создать новую доставку",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        delivery = rnd.getDelivery();\r",
+                  "        pm.collectionVariables.set(\"delivery\", delivery);\r",
+                  "    } catch(err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "\r",
+                  "    pm.request.body.update({\r",
+                  "        mode: 'raw',\r",
+                  "        raw: JSON.stringify(delivery),\r",
+                  "        options: { raw: { language: 'json' } }\r",
+                  "    });\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => {}, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => \r",
+                  "    {\r",
+                  "        try {\r",
+                  "            await main();\r",
+                  "        } catch (e) {\r",
+                  "            console.error(e);\r",
+                  "        } finally {\r",
+                  "            clearInterval(interval);\r",
+                  "        }\r",
+                  "    },  \r",
+                  "    100 \r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});\r",
+                  "\r",
+                  "const delivery = pm.collectionVariables.get(\"delivery\");\r",
+                  "\r",
+                  "pm.test(\"Проверка полей объекта Delivery\", function () {\r",
+                  "    const responseJson = pm.response.json();\r",
+                  "\r",
+                  "    pm.expect(responseJson.deliveryId).to.not.be.null;\r",
+                  "    pm.expect(responseJson.fromAddress).to.deep.equal(delivery.fromAddress);\r",
+                  "    pm.expect(responseJson.toAddress).to.deep.equal(delivery.toAddress);\r",
+                  "    pm.expect(responseJson.orderId).to.equal(delivery.orderId);\r",
+                  "    pm.expect(responseJson.deliveryState).to.equal(delivery.deliveryState);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/delivery",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "delivery"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Установка статуса IN_PROGRESS",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        delivery = rnd.getDelivery();\r",
+                  "        delivery = await api.addDelivery(delivery);\r",
+                  "        delivery.deliveryState = \"IN_PROGRESS\";\r",
+                  "\r",
+                  "        pm.collectionVariables.set(\"delivery\", delivery);\r",
+                  "    } catch (err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "\r",
+                  "    pm.request.body.update({\r",
+                  "        mode: 'raw',\r",
+                  "        raw: JSON.stringify(delivery.deliveryId),\r",
+                  "        options: { raw: { language: 'json' } }\r",
+                  "    });\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => { }, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => {\r",
+                  "    try {\r",
+                  "        await main();\r",
+                  "    } catch (e) {\r",
+                  "        console.error(e);\r",
+                  "    } finally {\r",
+                  "        clearInterval(interval);\r",
+                  "    }\r",
+                  "},\r",
+                  "    100\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});\r",
+                  "\r",
+                  "const delivery = pm.collectionVariables.get(\"delivery\");\r",
+                  "const responseJson = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Проверка полей объекта Delivery\", function () {\r",
+                  "    pm.expect(responseJson.deliveryId).to.not.be.null;\r",
+                  "    pm.expect(responseJson.fromAddress).to.deep.equal(delivery.fromAddress);\r",
+                  "    pm.expect(responseJson.toAddress).to.deep.equal(delivery.toAddress);\r",
+                  "    pm.expect(responseJson.orderId).to.equal(delivery.orderId);\r",
+                  "    pm.expect(responseJson.deliveryState).to.equal(\"IN_PROGRESS\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Проверка установки нового статуса Delivery\", function () {\r",
+                  "    pm.expect(responseJson.deliveryState).to.equal(\"IN_PROGRESS\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/delivery/successful",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "delivery",
+                "successful"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ошибка установки статуса IN_PROGRESS",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    pm.request.body.update({\r",
+                  "        mode: 'raw',\r",
+                  "        raw: JSON.stringify(pm.variables.replaceIn('{{$guid}}')),\r",
+                  "        options: { raw: { language: 'json' } }\r",
+                  "    });\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => { }, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => {\r",
+                  "    try {\r",
+                  "        await main();\r",
+                  "    } catch (e) {\r",
+                  "        console.error(e);\r",
+                  "    } finally {\r",
+                  "        clearInterval(interval);\r",
+                  "    }\r",
+                  "},\r",
+                  "    100\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 400 или 404\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 404]);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/delivery/successful",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "delivery",
+                "successful"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Установка статуса DELIVERED",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        delivery = rnd.getDelivery();\r",
+                  "        delivery = await api.addDelivery(delivery);\r",
+                  "        delivery.deliveryState = \"DELIVERED\";\r",
+                  "\r",
+                  "        pm.collectionVariables.set(\"delivery\", delivery);\r",
+                  "    } catch (err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "\r",
+                  "    pm.request.body.update({\r",
+                  "        mode: 'raw',\r",
+                  "        raw: JSON.stringify(delivery.deliveryId),\r",
+                  "        options: { raw: { language: 'json' } }\r",
+                  "    });\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => { }, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => {\r",
+                  "    try {\r",
+                  "        await main();\r",
+                  "    } catch (e) {\r",
+                  "        console.error(e);\r",
+                  "    } finally {\r",
+                  "        clearInterval(interval);\r",
+                  "    }\r",
+                  "},\r",
+                  "    100\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});\r",
+                  "\r",
+                  "const delivery = pm.collectionVariables.get(\"delivery\");\r",
+                  "const responseJson = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Проверка полей объекта Delivery\", function () {\r",
+                  "    pm.expect(responseJson.deliveryId).to.not.be.null;\r",
+                  "    pm.expect(responseJson.fromAddress).to.deep.equal(delivery.fromAddress);\r",
+                  "    pm.expect(responseJson.toAddress).to.deep.equal(delivery.toAddress);\r",
+                  "    pm.expect(responseJson.orderId).to.equal(delivery.orderId);\r",
+                  "    pm.expect(responseJson.deliveryState).to.equal(\"DELIVERED\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Проверка установки нового статуса Delivery\", function () {\r",
+                  "    pm.expect(responseJson.deliveryState).to.equal(\"DELIVERED\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/delivery/picked",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "delivery",
+                "picked"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ошибка установки статуса DELIVERED",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    pm.request.body.update({\r",
+                  "        mode: 'raw',\r",
+                  "        raw: JSON.stringify(pm.variables.replaceIn('{{$guid}}')),\r",
+                  "        options: { raw: { language: 'json' } }\r",
+                  "    });\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => { }, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => {\r",
+                  "    try {\r",
+                  "        await main();\r",
+                  "    } catch (e) {\r",
+                  "        console.error(e);\r",
+                  "    } finally {\r",
+                  "        clearInterval(interval);\r",
+                  "    }\r",
+                  "},\r",
+                  "    100\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 400 или 404\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 404]);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/delivery/picked",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "delivery",
+                "picked"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Установка статуса FAILED",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        delivery = rnd.getDelivery();\r",
+                  "        delivery = await api.addDelivery(delivery);\r",
+                  "        delivery.deliveryState = \"FAILED\";\r",
+                  "\r",
+                  "        pm.collectionVariables.set(\"delivery\", delivery);\r",
+                  "    } catch (err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "\r",
+                  "    pm.request.body.update({\r",
+                  "        mode: 'raw',\r",
+                  "        raw: JSON.stringify(delivery.deliveryId),\r",
+                  "        options: { raw: { language: 'json' } }\r",
+                  "    });\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => { }, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => {\r",
+                  "    try {\r",
+                  "        await main();\r",
+                  "    } catch (e) {\r",
+                  "        console.error(e);\r",
+                  "    } finally {\r",
+                  "        clearInterval(interval);\r",
+                  "    }\r",
+                  "},\r",
+                  "    100\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});\r",
+                  "\r",
+                  "const delivery = pm.collectionVariables.get(\"delivery\");\r",
+                  "const responseJson = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Проверка полей объекта Delivery\", function () {\r",
+                  "    pm.expect(responseJson.deliveryId).to.not.be.null;\r",
+                  "    pm.expect(responseJson.fromAddress).to.deep.equal(delivery.fromAddress);\r",
+                  "    pm.expect(responseJson.toAddress).to.deep.equal(delivery.toAddress);\r",
+                  "    pm.expect(responseJson.orderId).to.equal(delivery.orderId);\r",
+                  "    pm.expect(responseJson.deliveryState).to.equal(\"FAILED\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Проверка установки нового статуса Delivery\", function () {\r",
+                  "    pm.expect(responseJson.deliveryState).to.equal(\"FAILED\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/delivery/failed",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "delivery",
+                "failed"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ошибка установки статуса FAILED",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    pm.request.body.update({\r",
+                  "        mode: 'raw',\r",
+                  "        raw: JSON.stringify(pm.variables.replaceIn('{{$guid}}')),\r",
+                  "        options: { raw: { language: 'json' } }\r",
+                  "    });\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => { }, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => {\r",
+                  "    try {\r",
+                  "        await main();\r",
+                  "    } catch (e) {\r",
+                  "        console.error(e);\r",
+                  "    } finally {\r",
+                  "        clearInterval(interval);\r",
+                  "    }\r",
+                  "},\r",
+                  "    100\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 400 или 404\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 404]);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/delivery/failed",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "delivery",
+                "failed"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "warehous",
+      "item": [
+        {
+          "name": "Проверка запуска warehouse",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "packages": {},
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/warehouse/actuator/health",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "warehouse",
+                "actuator",
+                "health"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Проверка бронирования продуктов на складе",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {",
+                  "    const api = new API(pm);",
+                  "    const rnd = new RandomUtils();",
+                  "",
+                  "    try {",
+                  "        let product1 =  {",
+                  "            productId: pm.variables.replaceIn('{{$guid}}'),",
+                  "            weight: 2,",
+                  "            dimension: {",
+                  "                depth: 3,",
+                  "                height: 3,",
+                  "                width: 3",
+                  "            },",
+                  "            fragile: false",
+                  "        };",
+                  "        await api.addProductToWarehouse(product1);",
+                  "        const product1Quantity = Number(3);",
+                  "",
+                  "        await api.addQuantityToProductInWarehouse({",
+                  "            productId: product1.productId,",
+                  "            quantity: product1Quantity",
+                  "        });",
+                  "",
+                  "        let product2 = {",
+                  "            productId: pm.variables.replaceIn('{{$guid}}'),",
+                  "            weight: 3,",
+                  "            dimension: {",
+                  "                depth: 1,",
+                  "                height: 1,",
+                  "                width: 1",
+                  "            },",
+                  "            fragile: true",
+                  "        };",
+                  "        await api.addProductToWarehouse(product2);",
+                  "        const product2Quantity = Number(2);",
+                  "",
+                  "        await api.addQuantityToProductInWarehouse({",
+                  "            productId: product2.productId,",
+                  "            quantity: product2Quantity",
+                  "        });",
+                  "",
+                  "        const productMap = {",
+                  "            [product1.productId]: product1Quantity,",
+                  "            [product2.productId]: product2Quantity",
+                  "        };",
+                  "        const orderId = pm.variables.replaceIn('{{$guid}}');",
+                  "",
+                  "        const requestBody = {",
+                  "            products: productMap,",
+                  "            orderId: orderId",
+                  "        };",
+                  "",
+                  "        pm.request.body.update({",
+                  "            mode: 'raw',",
+                  "            raw: JSON.stringify(requestBody),",
+                  "            options: { raw: { language: 'json' } }",
+                  "        });",
+                  "    } catch (err) {",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);",
+                  "    }",
+                  "};",
+                  "",
+                  "const interval = setInterval(() => { }, 1000);",
+                  "",
+                  "setTimeout(async () => {",
+                  "    try {",
+                  "        await main();",
+                  "    } catch (e) {",
+                  "        console.error(e);",
+                  "    } finally {",
+                  "        clearInterval(interval);",
+                  "    }",
+                  "},",
+                  "    100",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "pm.test(\"Проверка deliveryWeight, deliveryVolume и fragile\", function () {",
+                  "    const response = pm.response.json();",
+                  "    ",
+                  "    const product1 = {",
+                  "        weight: 2,",
+                  "        dimension: {",
+                  "            depth: 3,",
+                  "            height: 3,",
+                  "            width: 3",
+                  "        },",
+                  "        fragile: false,",
+                  "        quantity: 3",
+                  "    };",
+                  "    ",
+                  "    const product2 = {",
+                  "        weight: 3,",
+                  "        dimension: {",
+                  "            depth: 1,",
+                  "            height: 1,",
+                  "            width: 1",
+                  "        },",
+                  "        fragile: true,",
+                  "        quantity: 2",
+                  "    };",
+                  "    ",
+                  "    const expectedDeliveryWeight = ",
+                  "        (product1.weight * product1.quantity) + ",
+                  "        (product2.weight * product2.quantity);",
+                  "    ",
+                  "    const expectedDeliveryVolume = ",
+                  "        (product1.dimension.depth * product1.dimension.height * product1.dimension.width) * product1.quantity +",
+                  "        (product2.dimension.depth * product2.dimension.height * product2.dimension.width) * product2.quantity;",
+                  "    ",
+                  "    const expectedFragile = product1.fragile === true || product2.fragile === true;",
+                  "    ",
+                  "    pm.expect(response.deliveryWeight).to.be.closeTo(expectedDeliveryWeight, 0.01,",
+                  "        `deliveryWeight: ожидалось ${expectedDeliveryWeight}, получено ${response.deliveryWeight}`);",
+                  "    ",
+                  "    pm.expect(response.deliveryVolume).to.be.closeTo(expectedDeliveryVolume, 0.01,",
+                  "        `deliveryVolume: ожидалось ${expectedDeliveryVolume}, получено ${response.deliveryVolume}`);",
+                  "    ",
+                  "    pm.expect(response.fragile).to.eql(expectedFragile,",
+                  "        `fragile: ожидалось ${expectedFragile}, получено ${response.fragile}`);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/warehouse/assembly",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "warehouse",
+                "assembly"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Возврат продуктов на склад",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {",
+                  "    const api = new API(pm);",
+                  "    const rnd = new RandomUtils();",
+                  "",
+                  "    try {",
+                  "        let product1 =  {",
+                  "            productId: pm.variables.replaceIn('{{$guid}}'),",
+                  "            weight: 2,",
+                  "            dimension: {",
+                  "                depth: 3,",
+                  "                height: 3,",
+                  "                width: 3",
+                  "            },",
+                  "            fragile: false",
+                  "        };",
+                  "        await api.addProductToWarehouse(product1);",
+                  "        const product1Quantity = Number(3);",
+                  "",
+                  "        await api.addQuantityToProductInWarehouse({",
+                  "            productId: product1.productId,",
+                  "            quantity: product1Quantity",
+                  "        });",
+                  "",
+                  "        let product2 = {",
+                  "            productId: pm.variables.replaceIn('{{$guid}}'),",
+                  "            weight: 3,",
+                  "            dimension: {",
+                  "                depth: 1,",
+                  "                height: 1,",
+                  "                width: 1",
+                  "            },",
+                  "            fragile: true",
+                  "        };",
+                  "        await api.addProductToWarehouse(product2);",
+                  "        const product2Quantity = Number(2);",
+                  "",
+                  "        await api.addQuantityToProductInWarehouse({",
+                  "            productId: product2.productId,",
+                  "            quantity: product2Quantity",
+                  "        });",
+                  "",
+                  "        const productMap = {",
+                  "            [product1.productId]: product1Quantity,",
+                  "            [product2.productId]: product2Quantity",
+                  "        };",
+                  "",
+                  "        pm.request.body.update({",
+                  "            mode: 'raw',",
+                  "            raw: JSON.stringify(productMap),",
+                  "            options: { raw: { language: 'json' } }",
+                  "        });",
+                  "    } catch (err) {",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);",
+                  "    }",
+                  "};",
+                  "",
+                  "const interval = setInterval(() => { }, 1000);",
+                  "",
+                  "setTimeout(async () => {",
+                  "    try {",
+                  "        await main();",
+                  "    } catch (e) {",
+                  "        console.error(e);",
+                  "    } finally {",
+                  "        clearInterval(interval);",
+                  "    }",
+                  "},",
+                  "    100",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/warehouse/return",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "warehouse",
+                "return"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ошибка бронирования продуктов на склад",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        let product1 =  {\r",
+                  "            productId: pm.variables.replaceIn('{{$guid}}'),\r",
+                  "            weight: 2,\r",
+                  "            dimension: {\r",
+                  "                depth: 3,\r",
+                  "                height: 3,\r",
+                  "                width: 3\r",
+                  "            },\r",
+                  "            fragile: false\r",
+                  "        };\r",
+                  "        await api.addProductToWarehouse(product1);\r",
+                  "        const product1Quantity = Number(3);\r",
+                  "\r",
+                  "        await api.addQuantityToProductInWarehouse({\r",
+                  "            productId: product1.productId,\r",
+                  "            quantity: product1Quantity\r",
+                  "        });\r",
+                  "\r",
+                  "        let product2 = {\r",
+                  "            productId: pm.variables.replaceIn('{{$guid}}'),\r",
+                  "            weight: 3,\r",
+                  "            dimension: {\r",
+                  "                depth: 1,\r",
+                  "                height: 1,\r",
+                  "                width: 1\r",
+                  "            },\r",
+                  "            fragile: true\r",
+                  "        };\r",
+                  "        await api.addProductToWarehouse(product2);\r",
+                  "        const product2Quantity = Number(2);\r",
+                  "\r",
+                  "        await api.addQuantityToProductInWarehouse({\r",
+                  "            productId: product2.productId,\r",
+                  "            quantity: product2Quantity\r",
+                  "        });\r",
+                  "\r",
+                  "        const productMap = {\r",
+                  "            [product1.productId]: product1Quantity + 10,\r",
+                  "            [product2.productId]: product2Quantity\r",
+                  "        };\r",
+                  "        const orderId = pm.variables.replaceIn('{{$guid}}');\r",
+                  "\r",
+                  "        const requestBody = {\r",
+                  "            products: productMap,\r",
+                  "            orderId: orderId\r",
+                  "        };\r",
+                  "\r",
+                  "        pm.request.body.update({\r",
+                  "            mode: 'raw',\r",
+                  "            raw: JSON.stringify(requestBody),\r",
+                  "            options: { raw: { language: 'json' } }\r",
+                  "        });\r",
+                  "    } catch (err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => { }, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => {\r",
+                  "    try {\r",
+                  "        await main();\r",
+                  "    } catch (e) {\r",
+                  "        console.error(e);\r",
+                  "    } finally {\r",
+                  "        clearInterval(interval);\r",
+                  "    }\r",
+                  "},\r",
+                  "    100\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 400 или 404\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 404]);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/warehouse/assembly",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "warehouse",
+                "assembly"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "shippedDelivery тест",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        const request = {\r",
+                  "            \"orderId\" : pm.variables.replaceIn('{{$guid}}'),\r",
+                  "            \"deliveryId\" : pm.variables.replaceIn('{{$guid}}'),\r",
+                  "        }\r",
+                  "\r",
+                  "        pm.request.body.update({\r",
+                  "            mode: 'raw',\r",
+                  "            raw: JSON.stringify(request),\r",
+                  "            options: { raw: { language: 'json' } }\r",
+                  "        });\r",
+                  "    } catch (err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => { }, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => {\r",
+                  "    try {\r",
+                  "        await main();\r",
+                  "    } catch (e) {\r",
+                  "        console.error(e);\r",
+                  "    } finally {\r",
+                  "        clearInterval(interval);\r",
+                  "    }\r",
+                  "},\r",
+                  "    100\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/warehouse/shipped",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "warehouse",
+                "shipped"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "payment",
+      "item": [
+        {
+          "name": "Проверки запуска Payment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/payment/actuator/health",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "payment",
+                "actuator",
+                "health"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Проверки запуска Store",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/shopping-store/actuator/health",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "shopping-store",
+                "actuator",
+                "health"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Проверка сохранения платёжки",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        order = rnd.getOrder();\r",
+                  "        pm.collectionVariables.set(\"order\", order);\r",
+                  "    } catch(err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "\r",
+                  "    pm.request.body.update({\r",
+                  "        mode: 'raw',\r",
+                  "        raw: JSON.stringify(order),\r",
+                  "        options: { raw: { language: 'json' } }\r",
+                  "    });\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => {}, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => \r",
+                  "    {\r",
+                  "        try {\r",
+                  "            await main();\r",
+                  "        } catch (e) {\r",
+                  "            console.error(e);\r",
+                  "        } finally {\r",
+                  "            clearInterval(interval);\r",
+                  "        }\r",
+                  "    },  \r",
+                  "    100 \r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});\r",
+                  "\r",
+                  "const order = pm.collectionVariables.get(\"order\");\r",
+                  "\r",
+                  "pm.test(\"Проверка полей объекта Payment\", function () {\r",
+                  "    const responseJson = pm.response.json();\r",
+                  "\r",
+                  "    pm.expect(responseJson.paymentId).to.not.be.null;\r",
+                  "    pm.expect(responseJson.totalPayment).to.deep.equal(order.totalPrice);\r",
+                  "    pm.expect(responseJson.deliveryTotal).to.deep.equal(order.deliveryPrice);\r",
+                  "    pm.expect(responseJson.feeTotal).to.equal(\r",
+                  "        order.totalPrice - order.deliveryPrice - order.productPrice\r",
+                  "        );\r",
+                  "    pm.expect(responseJson.paymentStatusDto).to.equal(\"PENDING\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/payment",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "payment"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Оплата прошла успешно",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        order = rnd.getOrder();\r",
+                  "        pm.collectionVariables.set(\"order\", order);\r",
+                  "        api.addPayment(order);\r",
+                  "    } catch(err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "\r",
+                  "    pm.request.body.update({\r",
+                  "        mode: 'raw',\r",
+                  "        raw: JSON.stringify(order.paymentId),\r",
+                  "        options: { raw: { language: 'json' } }\r",
+                  "    });\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => {}, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => \r",
+                  "    {\r",
+                  "        try {\r",
+                  "            await main();\r",
+                  "        } catch (e) {\r",
+                  "            console.error(e);\r",
+                  "        } finally {\r",
+                  "            clearInterval(interval);\r",
+                  "        }\r",
+                  "    },  \r",
+                  "    100 \r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/payment/refund",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "payment",
+                "refund"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Оплата не прошла",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        order = rnd.getOrder();\r",
+                  "        pm.collectionVariables.set(\"order\", order);\r",
+                  "        api.addPayment(order);\r",
+                  "    } catch(err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "\r",
+                  "    pm.request.body.update({\r",
+                  "        mode: 'raw',\r",
+                  "        raw: JSON.stringify(order.paymentId),\r",
+                  "        options: { raw: { language: 'json' } }\r",
+                  "    });\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => {}, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => \r",
+                  "    {\r",
+                  "        try {\r",
+                  "            await main();\r",
+                  "        } catch (e) {\r",
+                  "            console.error(e);\r",
+                  "        } finally {\r",
+                  "            clearInterval(interval);\r",
+                  "        }\r",
+                  "    },  \r",
+                  "    100 \r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/payment/failed",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "payment",
+                "failed"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Оплата не существует",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        orderId = pm.variables.replaceIn('{{$guid}}');\r",
+                  "    } catch(err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "\r",
+                  "    pm.request.body.update({\r",
+                  "        mode: 'raw',\r",
+                  "        raw: JSON.stringify(orderId),\r",
+                  "        options: { raw: { language: 'json' } }\r",
+                  "    });\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => {}, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => \r",
+                  "    {\r",
+                  "        try {\r",
+                  "            await main();\r",
+                  "        } catch (e) {\r",
+                  "            console.error(e);\r",
+                  "        } finally {\r",
+                  "            clearInterval(interval);\r",
+                  "        }\r",
+                  "    },  \r",
+                  "    100 \r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 400 или 404\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 404]);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/payment/failed",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "payment",
+                "failed"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Проверка расчёта полной стоимости",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        order = rnd.getOrder();\r",
+                  "        order.totalPrice = 0;\r",
+                  "        pm.collectionVariables.set(\"order\", order);\r",
+                  "    } catch(err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "\r",
+                  "    pm.request.body.update({\r",
+                  "        mode: 'raw',\r",
+                  "        raw: JSON.stringify(order),\r",
+                  "        options: { raw: { language: 'json' } }\r",
+                  "    });\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => {}, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => \r",
+                  "    {\r",
+                  "        try {\r",
+                  "            await main();\r",
+                  "        } catch (e) {\r",
+                  "            console.error(e);\r",
+                  "        } finally {\r",
+                  "            clearInterval(interval);\r",
+                  "        }\r",
+                  "    },  \r",
+                  "    100 \r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});\r",
+                  "\r",
+                  "const order = pm.collectionVariables.get(\"order\");\r",
+                  "\r",
+                  "pm.test(\"Проверка полной стоимости\", function () {\r",
+                  "    const responseJson = pm.response.json();\r",
+                  "    pm.expect(responseJson).to.deep.equal(\r",
+                  "        order.deliveryPrice + order.productPrice * 0.1 + order.productPrice\r",
+                  "    );\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/payment/totalCost",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "payment",
+                "totalCost"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Проверка расчёта стоимости продуктов",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        product1 = rnd.getProduct();\r",
+                  "        product1 = await api.addProduct(product1);\r",
+                  "\r",
+                  "        product2 = rnd.getProduct();\r",
+                  "        product2 = await api.addProduct(product2);\r",
+                  "\r",
+                  "        product3 = rnd.getProduct();\r",
+                  "        product3 = await api.addProduct(product3);\r",
+                  "\r",
+                  "        pm.collectionVariables.set(\"product1\", product1);\r",
+                  "        pm.collectionVariables.set(\"product2\", product2);\r",
+                  "        pm.collectionVariables.set(\"product3\", product3);\r",
+                  "\r",
+                  "        order = rnd.getOrder();\r",
+                  "        order.totalPrice = 0;\r",
+                  "        order.deliveryPrice = 0;\r",
+                  "        order.productPrice = 0;\r",
+                  "        order.products = {\r",
+                  "            [product1.productId]: 3,\r",
+                  "            [product2.productId]: 5,\r",
+                  "            [product3.productId]: 10\r",
+                  "        };\r",
+                  "    } catch (err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "\r",
+                  "    pm.request.body.update({\r",
+                  "        mode: 'raw',\r",
+                  "        raw: JSON.stringify(order),\r",
+                  "        options: { raw: { language: 'json' } }\r",
+                  "    });\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => { }, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => {\r",
+                  "    try {\r",
+                  "        await main();\r",
+                  "    } catch (e) {\r",
+                  "        console.error(e);\r",
+                  "    } finally {\r",
+                  "        clearInterval(interval);\r",
+                  "    }\r",
+                  "},\r",
+                  "    100\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});\r",
+                  "\r",
+                  "const product1 = pm.collectionVariables.get(\"product1\");\r",
+                  "const product2 = pm.collectionVariables.get(\"product2\");\r",
+                  "const product3 = pm.collectionVariables.get(\"product3\");\r",
+                  "\r",
+                  "pm.test(\"Проверка стоимости продуктов\", function () {\r",
+                  "    const responseJson = pm.response.json();\r",
+                  "    const expected = product1.price * 3 + product2.price * 5 + product3.price * 10;\r",
+                  "\r",
+                  "    pm.expect(responseJson).to.closeTo(expected, 0.01)\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/payment/productCost",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "payment",
+                "productCost"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "order",
+      "item": [
+        {
+          "name": "Проверки запуска Order",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/order/actuator/health",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "order",
+                "actuator",
+                "health"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Создать новый заказ",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        let product1 = rnd.getProductForWarehouse();\r",
+                  "        await api.addProductToWarehouse(product1);\r",
+                  "        const product1Quantity = Number(10);\r",
+                  "\r",
+                  "        await api.addQuantityToProductInWarehouse({\r",
+                  "            productId: product1.productId,\r",
+                  "            quantity: product1Quantity\r",
+                  "        });\r",
+                  "\r",
+                  "        let product2 = rnd.getProductForWarehouse();\r",
+                  "        await api.addProductToWarehouse(product2);\r",
+                  "        const product2Quantity = Number(10);\r",
+                  "\r",
+                  "        await api.addQuantityToProductInWarehouse({\r",
+                  "            productId: product2.productId,\r",
+                  "            quantity: product2Quantity\r",
+                  "        });\r",
+                  "\r",
+                  "        let orderRequest = rnd.getOrderRequest();\r",
+                  "        const productMap = {\r",
+                  "            [product1.productId]: 5,\r",
+                  "            [product2.productId]: 5\r",
+                  "        };\r",
+                  "        orderRequest.shoppingCartDto.products = productMap;\r",
+                  "\r",
+                  "        pm.collectionVariables.set(\"orderRequest\", orderRequest);\r",
+                  "        \r",
+                  "        pm.request.body.update({\r",
+                  "            mode: 'raw',\r",
+                  "            raw: JSON.stringify(orderRequest),\r",
+                  "            options: { raw: { language: 'json' } }\r",
+                  "        });\r",
+                  "    } catch (err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => { }, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => {\r",
+                  "    try {\r",
+                  "        await main();\r",
+                  "    } catch (e) {\r",
+                  "        console.error(e);\r",
+                  "    } finally {\r",
+                  "        clearInterval(interval);\r",
+                  "    }\r",
+                  "},\r",
+                  "    100\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});\r",
+                  "\r",
+                  "const orderRequest = pm.collectionVariables.get(\"orderRequest\");\r",
+                  "\r",
+                  "pm.test(\"Проверка полей объекта Order\", function () {\r",
+                  "    const responseJson = pm.response.json();\r",
+                  "    pm.expect(responseJson.deliveryId).to.not.be.null;\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/order",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "order"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Заказ оплачен",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        let product1 = rnd.getProductForWarehouse();\r",
+                  "        await api.addProductToWarehouse(product1);\r",
+                  "        const product1Quantity = Number(10);\r",
+                  "\r",
+                  "        await api.addQuantityToProductInWarehouse({\r",
+                  "            productId: product1.productId,\r",
+                  "            quantity: product1Quantity\r",
+                  "        });\r",
+                  "\r",
+                  "        let product2 = rnd.getProductForWarehouse();\r",
+                  "        await api.addProductToWarehouse(product2);\r",
+                  "        const product2Quantity = Number(10);\r",
+                  "\r",
+                  "        await api.addQuantityToProductInWarehouse({\r",
+                  "            productId: product2.productId,\r",
+                  "            quantity: product2Quantity\r",
+                  "        });\r",
+                  "\r",
+                  "        let orderRequest = rnd.getOrderRequest();\r",
+                  "        const productMap = {\r",
+                  "            [product1.productId]: 5,\r",
+                  "            [product2.productId]: 5\r",
+                  "        };\r",
+                  "        orderRequest.shoppingCartDto.products = productMap;\r",
+                  "        const order = await api.addOrder(orderRequest)\r",
+                  "\r",
+                  "        pm.collectionVariables.set(\"order\", order);\r",
+                  "\r",
+                  "        \r",
+                  "        pm.request.body.update({\r",
+                  "            mode: 'raw',\r",
+                  "            raw: JSON.stringify(order.orderId),\r",
+                  "            options: { raw: { language: 'json' } }\r",
+                  "        });\r",
+                  "    } catch (err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => { }, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => {\r",
+                  "    try {\r",
+                  "        await main();\r",
+                  "    } catch (e) {\r",
+                  "        console.error(e);\r",
+                  "    } finally {\r",
+                  "        clearInterval(interval);\r",
+                  "    }\r",
+                  "},\r",
+                  "    100\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});\r",
+                  "\r",
+                  "const order = pm.collectionVariables.get(\"order\");\r",
+                  "\r",
+                  "pm.test(\"Проверка полей объекта Order\", function () {\r",
+                  "    const responseJson = pm.response.json();\r",
+                  "    pm.expect(responseJson.deliveryId).to.not.be.null;\r",
+                  "    pm.expect(responseJson.state).to.equal(\"PAID\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/order/payment",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "order",
+                "payment"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ошибка оплаты заказа",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        let product1 = rnd.getProductForWarehouse();\r",
+                  "        await api.addProductToWarehouse(product1);\r",
+                  "        const product1Quantity = Number(10);\r",
+                  "\r",
+                  "        await api.addQuantityToProductInWarehouse({\r",
+                  "            productId: product1.productId,\r",
+                  "            quantity: product1Quantity\r",
+                  "        });\r",
+                  "\r",
+                  "        let product2 = rnd.getProductForWarehouse();\r",
+                  "        await api.addProductToWarehouse(product2);\r",
+                  "        const product2Quantity = Number(10);\r",
+                  "\r",
+                  "        await api.addQuantityToProductInWarehouse({\r",
+                  "            productId: product2.productId,\r",
+                  "            quantity: product2Quantity\r",
+                  "        });\r",
+                  "\r",
+                  "        let orderRequest = rnd.getOrderRequest();\r",
+                  "        const productMap = {\r",
+                  "            [product1.productId]: 5,\r",
+                  "            [product2.productId]: 5\r",
+                  "        };\r",
+                  "        orderRequest.shoppingCartDto.products = productMap;\r",
+                  "        const order = await api.addOrder(orderRequest)\r",
+                  "\r",
+                  "        pm.collectionVariables.set(\"order\", order);\r",
+                  "\r",
+                  "        \r",
+                  "        pm.request.body.update({\r",
+                  "            mode: 'raw',\r",
+                  "            raw: JSON.stringify(order.orderId),\r",
+                  "            options: { raw: { language: 'json' } }\r",
+                  "        });\r",
+                  "    } catch (err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => { }, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => {\r",
+                  "    try {\r",
+                  "        await main();\r",
+                  "    } catch (e) {\r",
+                  "        console.error(e);\r",
+                  "    } finally {\r",
+                  "        clearInterval(interval);\r",
+                  "    }\r",
+                  "},\r",
+                  "    100\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});\r",
+                  "\r",
+                  "const order = pm.collectionVariables.get(\"order\");\r",
+                  "\r",
+                  "pm.test(\"Проверка полей объекта Order\", function () {\r",
+                  "    const responseJson = pm.response.json();\r",
+                  "    pm.expect(responseJson.deliveryId).to.not.be.null;\r",
+                  "    pm.expect(responseJson.state).to.equal(\"PAYMENT_FAILED\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/order/payment/failed",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "order",
+                "payment",
+                "failed"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Заказ доставлен",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        let product1 = rnd.getProductForWarehouse();\r",
+                  "        await api.addProductToWarehouse(product1);\r",
+                  "        const product1Quantity = Number(10);\r",
+                  "\r",
+                  "        await api.addQuantityToProductInWarehouse({\r",
+                  "            productId: product1.productId,\r",
+                  "            quantity: product1Quantity\r",
+                  "        });\r",
+                  "\r",
+                  "        let product2 = rnd.getProductForWarehouse();\r",
+                  "        await api.addProductToWarehouse(product2);\r",
+                  "        const product2Quantity = Number(10);\r",
+                  "\r",
+                  "        await api.addQuantityToProductInWarehouse({\r",
+                  "            productId: product2.productId,\r",
+                  "            quantity: product2Quantity\r",
+                  "        });\r",
+                  "\r",
+                  "        let orderRequest = rnd.getOrderRequest();\r",
+                  "        const productMap = {\r",
+                  "            [product1.productId]: 5,\r",
+                  "            [product2.productId]: 5\r",
+                  "        };\r",
+                  "        orderRequest.shoppingCartDto.products = productMap;\r",
+                  "        const order = await api.addOrder(orderRequest)\r",
+                  "\r",
+                  "        pm.collectionVariables.set(\"order\", order);\r",
+                  "\r",
+                  "        \r",
+                  "        pm.request.body.update({\r",
+                  "            mode: 'raw',\r",
+                  "            raw: JSON.stringify(order.orderId),\r",
+                  "            options: { raw: { language: 'json' } }\r",
+                  "        });\r",
+                  "    } catch (err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => { }, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => {\r",
+                  "    try {\r",
+                  "        await main();\r",
+                  "    } catch (e) {\r",
+                  "        console.error(e);\r",
+                  "    } finally {\r",
+                  "        clearInterval(interval);\r",
+                  "    }\r",
+                  "},\r",
+                  "    100\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});\r",
+                  "\r",
+                  "const order = pm.collectionVariables.get(\"order\");\r",
+                  "\r",
+                  "pm.test(\"Проверка полей объекта Order\", function () {\r",
+                  "    const responseJson = pm.response.json();\r",
+                  "    pm.expect(responseJson.deliveryId).to.not.be.null;\r",
+                  "    pm.expect(responseJson.state).to.equal(\"DELIVERED\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/order/delivery",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "order",
+                "delivery"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ошибка доставки",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        let product1 = rnd.getProductForWarehouse();\r",
+                  "        await api.addProductToWarehouse(product1);\r",
+                  "        const product1Quantity = Number(10);\r",
+                  "\r",
+                  "        await api.addQuantityToProductInWarehouse({\r",
+                  "            productId: product1.productId,\r",
+                  "            quantity: product1Quantity\r",
+                  "        });\r",
+                  "\r",
+                  "        let product2 = rnd.getProductForWarehouse();\r",
+                  "        await api.addProductToWarehouse(product2);\r",
+                  "        const product2Quantity = Number(10);\r",
+                  "\r",
+                  "        await api.addQuantityToProductInWarehouse({\r",
+                  "            productId: product2.productId,\r",
+                  "            quantity: product2Quantity\r",
+                  "        });\r",
+                  "\r",
+                  "        let orderRequest = rnd.getOrderRequest();\r",
+                  "        const productMap = {\r",
+                  "            [product1.productId]: 5,\r",
+                  "            [product2.productId]: 5\r",
+                  "        };\r",
+                  "        orderRequest.shoppingCartDto.products = productMap;\r",
+                  "        const order = await api.addOrder(orderRequest)\r",
+                  "\r",
+                  "        pm.collectionVariables.set(\"order\", order);\r",
+                  "\r",
+                  "        \r",
+                  "        pm.request.body.update({\r",
+                  "            mode: 'raw',\r",
+                  "            raw: JSON.stringify(order.orderId),\r",
+                  "            options: { raw: { language: 'json' } }\r",
+                  "        });\r",
+                  "    } catch (err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => { }, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => {\r",
+                  "    try {\r",
+                  "        await main();\r",
+                  "    } catch (e) {\r",
+                  "        console.error(e);\r",
+                  "    } finally {\r",
+                  "        clearInterval(interval);\r",
+                  "    }\r",
+                  "},\r",
+                  "    100\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});\r",
+                  "\r",
+                  "const order = pm.collectionVariables.get(\"order\");\r",
+                  "\r",
+                  "pm.test(\"Проверка полей объекта Order\", function () {\r",
+                  "    const responseJson = pm.response.json();\r",
+                  "    pm.expect(responseJson.deliveryId).to.not.be.null;\r",
+                  "    pm.expect(responseJson.state).to.equal(\"DELIVERY_FAILED\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/order/delivery/failed",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "order",
+                "delivery",
+                "failed"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Заказ собран",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        let product1 = rnd.getProductForWarehouse();\r",
+                  "        await api.addProductToWarehouse(product1);\r",
+                  "        const product1Quantity = Number(10);\r",
+                  "\r",
+                  "        await api.addQuantityToProductInWarehouse({\r",
+                  "            productId: product1.productId,\r",
+                  "            quantity: product1Quantity\r",
+                  "        });\r",
+                  "\r",
+                  "        let product2 = rnd.getProductForWarehouse();\r",
+                  "        await api.addProductToWarehouse(product2);\r",
+                  "        const product2Quantity = Number(10);\r",
+                  "\r",
+                  "        await api.addQuantityToProductInWarehouse({\r",
+                  "            productId: product2.productId,\r",
+                  "            quantity: product2Quantity\r",
+                  "        });\r",
+                  "\r",
+                  "        let orderRequest = rnd.getOrderRequest();\r",
+                  "        const productMap = {\r",
+                  "            [product1.productId]: 5,\r",
+                  "            [product2.productId]: 5\r",
+                  "        };\r",
+                  "        orderRequest.shoppingCartDto.products = productMap;\r",
+                  "        const order = await api.addOrder(orderRequest)\r",
+                  "\r",
+                  "        pm.collectionVariables.set(\"order\", order);\r",
+                  "\r",
+                  "        \r",
+                  "        pm.request.body.update({\r",
+                  "            mode: 'raw',\r",
+                  "            raw: JSON.stringify(order.orderId),\r",
+                  "            options: { raw: { language: 'json' } }\r",
+                  "        });\r",
+                  "    } catch (err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => { }, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => {\r",
+                  "    try {\r",
+                  "        await main();\r",
+                  "    } catch (e) {\r",
+                  "        console.error(e);\r",
+                  "    } finally {\r",
+                  "        clearInterval(interval);\r",
+                  "    }\r",
+                  "},\r",
+                  "    100\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});\r",
+                  "\r",
+                  "const order = pm.collectionVariables.get(\"order\");\r",
+                  "\r",
+                  "pm.test(\"Проверка полей объекта Order\", function () {\r",
+                  "    const responseJson = pm.response.json();\r",
+                  "    pm.expect(responseJson.deliveryId).to.not.be.null;\r",
+                  "    pm.expect(responseJson.state).to.equal(\"ASSEMBLED\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/order/assembly",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "order",
+                "assembly"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ошибка сборки заказа",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        let product1 = rnd.getProductForWarehouse();\r",
+                  "        await api.addProductToWarehouse(product1);\r",
+                  "        const product1Quantity = Number(10);\r",
+                  "\r",
+                  "        await api.addQuantityToProductInWarehouse({\r",
+                  "            productId: product1.productId,\r",
+                  "            quantity: product1Quantity\r",
+                  "        });\r",
+                  "\r",
+                  "        let product2 = rnd.getProductForWarehouse();\r",
+                  "        await api.addProductToWarehouse(product2);\r",
+                  "        const product2Quantity = Number(10);\r",
+                  "\r",
+                  "        await api.addQuantityToProductInWarehouse({\r",
+                  "            productId: product2.productId,\r",
+                  "            quantity: product2Quantity\r",
+                  "        });\r",
+                  "\r",
+                  "        let orderRequest = rnd.getOrderRequest();\r",
+                  "        const productMap = {\r",
+                  "            [product1.productId]: 5,\r",
+                  "            [product2.productId]: 5\r",
+                  "        };\r",
+                  "        orderRequest.shoppingCartDto.products = productMap;\r",
+                  "        const order = await api.addOrder(orderRequest)\r",
+                  "\r",
+                  "        pm.collectionVariables.set(\"order\", order);\r",
+                  "\r",
+                  "        \r",
+                  "        pm.request.body.update({\r",
+                  "            mode: 'raw',\r",
+                  "            raw: JSON.stringify(order.orderId),\r",
+                  "            options: { raw: { language: 'json' } }\r",
+                  "        });\r",
+                  "    } catch (err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => { }, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => {\r",
+                  "    try {\r",
+                  "        await main();\r",
+                  "    } catch (e) {\r",
+                  "        console.error(e);\r",
+                  "    } finally {\r",
+                  "        clearInterval(interval);\r",
+                  "    }\r",
+                  "},\r",
+                  "    100\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});\r",
+                  "\r",
+                  "const order = pm.collectionVariables.get(\"order\");\r",
+                  "\r",
+                  "pm.test(\"Проверка полей объекта Order\", function () {\r",
+                  "    const responseJson = pm.response.json();\r",
+                  "    pm.expect(responseJson.deliveryId).to.not.be.null;\r",
+                  "    pm.expect(responseJson.state).to.equal(\"ASSEMBLY_FAILED\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/order/assembly/failed",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "order",
+                "assembly",
+                "failed"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Заказ завершён",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        let product1 = rnd.getProductForWarehouse();\r",
+                  "        await api.addProductToWarehouse(product1);\r",
+                  "        const product1Quantity = Number(10);\r",
+                  "\r",
+                  "        await api.addQuantityToProductInWarehouse({\r",
+                  "            productId: product1.productId,\r",
+                  "            quantity: product1Quantity\r",
+                  "        });\r",
+                  "\r",
+                  "        let product2 = rnd.getProductForWarehouse();\r",
+                  "        await api.addProductToWarehouse(product2);\r",
+                  "        const product2Quantity = Number(10);\r",
+                  "\r",
+                  "        await api.addQuantityToProductInWarehouse({\r",
+                  "            productId: product2.productId,\r",
+                  "            quantity: product2Quantity\r",
+                  "        });\r",
+                  "\r",
+                  "        let orderRequest = rnd.getOrderRequest();\r",
+                  "        const productMap = {\r",
+                  "            [product1.productId]: 5,\r",
+                  "            [product2.productId]: 5\r",
+                  "        };\r",
+                  "        orderRequest.shoppingCartDto.products = productMap;\r",
+                  "        const order = await api.addOrder(orderRequest)\r",
+                  "\r",
+                  "        pm.collectionVariables.set(\"order\", order);\r",
+                  "\r",
+                  "        \r",
+                  "        pm.request.body.update({\r",
+                  "            mode: 'raw',\r",
+                  "            raw: JSON.stringify(order.orderId),\r",
+                  "            options: { raw: { language: 'json' } }\r",
+                  "        });\r",
+                  "    } catch (err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => { }, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => {\r",
+                  "    try {\r",
+                  "        await main();\r",
+                  "    } catch (e) {\r",
+                  "        console.error(e);\r",
+                  "    } finally {\r",
+                  "        clearInterval(interval);\r",
+                  "    }\r",
+                  "},\r",
+                  "    100\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});\r",
+                  "\r",
+                  "const order = pm.collectionVariables.get(\"order\");\r",
+                  "\r",
+                  "pm.test(\"Проверка полей объекта Order\", function () {\r",
+                  "    const responseJson = pm.response.json();\r",
+                  "    pm.expect(responseJson.deliveryId).to.not.be.null;\r",
+                  "    pm.expect(responseJson.state).to.equal(\"COMPLETED\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/order/completed",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "order",
+                "completed"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Расчёт стоимости доставки",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        let product1 = rnd.getProductForWarehouse();\r",
+                  "        await api.addProductToWarehouse(product1);\r",
+                  "        const product1Quantity = Number(10);\r",
+                  "\r",
+                  "        await api.addQuantityToProductInWarehouse({\r",
+                  "            productId: product1.productId,\r",
+                  "            quantity: product1Quantity\r",
+                  "        });\r",
+                  "\r",
+                  "        let product2 = rnd.getProductForWarehouse();\r",
+                  "        await api.addProductToWarehouse(product2);\r",
+                  "        const product2Quantity = Number(10);\r",
+                  "\r",
+                  "        await api.addQuantityToProductInWarehouse({\r",
+                  "            productId: product2.productId,\r",
+                  "            quantity: product2Quantity\r",
+                  "        });\r",
+                  "\r",
+                  "        let orderRequest = rnd.getOrderRequest();\r",
+                  "        const productMap = {\r",
+                  "            [product1.productId]: 5,\r",
+                  "            [product2.productId]: 5\r",
+                  "        };\r",
+                  "        orderRequest.shoppingCartDto.products = productMap;\r",
+                  "        const order = await api.addOrder(orderRequest)\r",
+                  "\r",
+                  "        pm.collectionVariables.set(\"order\", order);\r",
+                  "\r",
+                  "        \r",
+                  "        pm.request.body.update({\r",
+                  "            mode: 'raw',\r",
+                  "            raw: JSON.stringify(order.orderId),\r",
+                  "            options: { raw: { language: 'json' } }\r",
+                  "        });\r",
+                  "    } catch (err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => { }, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => {\r",
+                  "    try {\r",
+                  "        await main();\r",
+                  "    } catch (e) {\r",
+                  "        console.error(e);\r",
+                  "    } finally {\r",
+                  "        clearInterval(interval);\r",
+                  "    }\r",
+                  "},\r",
+                  "    100\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/order/calculate/delivery",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "order",
+                "calculate",
+                "delivery"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Расчёт полной стоимости доставки",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        let product1 = rnd.getProductForWarehouse();\r",
+                  "        await api.addProductToWarehouse(product1);\r",
+                  "        const product1Quantity = Number(10);\r",
+                  "\r",
+                  "        await api.addQuantityToProductInWarehouse({\r",
+                  "            productId: product1.productId,\r",
+                  "            quantity: product1Quantity\r",
+                  "        });\r",
+                  "\r",
+                  "        let product2 = rnd.getProductForWarehouse();\r",
+                  "        await api.addProductToWarehouse(product2);\r",
+                  "        const product2Quantity = Number(10);\r",
+                  "\r",
+                  "        await api.addQuantityToProductInWarehouse({\r",
+                  "            productId: product2.productId,\r",
+                  "            quantity: product2Quantity\r",
+                  "        });\r",
+                  "\r",
+                  "        let orderRequest = rnd.getOrderRequest();\r",
+                  "        const productMap = {\r",
+                  "            [product1.productId]: 5,\r",
+                  "            [product2.productId]: 5\r",
+                  "        };\r",
+                  "        orderRequest.shoppingCartDto.products = productMap;\r",
+                  "        const order = await api.addOrder(orderRequest);\r",
+                  "        await api.calculateDeliveryCost(order.orderId);\r",
+                  "        pm.collectionVariables.set(\"order\", order);\r",
+                  "        \r",
+                  "        pm.request.body.update({\r",
+                  "            mode: 'raw',\r",
+                  "            raw: JSON.stringify(order.orderId),\r",
+                  "            options: { raw: { language: 'json' } }\r",
+                  "        });\r",
+                  "    } catch (err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => { }, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => {\r",
+                  "    try {\r",
+                  "        await main();\r",
+                  "    } catch (e) {\r",
+                  "        console.error(e);\r",
+                  "    } finally {\r",
+                  "        clearInterval(interval);\r",
+                  "    }\r",
+                  "},\r",
+                  "    100\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/order/calculate/total",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "order",
+                "calculate",
+                "total"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Возврат товаров",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        let product1 = rnd.getProductForWarehouse();\r",
+                  "        await api.addProductToWarehouse(product1);\r",
+                  "        const product1Quantity = Number(10);\r",
+                  "\r",
+                  "        await api.addQuantityToProductInWarehouse({\r",
+                  "            productId: product1.productId,\r",
+                  "            quantity: product1Quantity\r",
+                  "        });\r",
+                  "\r",
+                  "        let product2 = rnd.getProductForWarehouse();\r",
+                  "        await api.addProductToWarehouse(product2);\r",
+                  "        const product2Quantity = Number(10);\r",
+                  "\r",
+                  "        await api.addQuantityToProductInWarehouse({\r",
+                  "            productId: product2.productId,\r",
+                  "            quantity: product2Quantity\r",
+                  "        });\r",
+                  "\r",
+                  "        let orderRequest = rnd.getOrderRequest();\r",
+                  "        const productMap = {\r",
+                  "            [product1.productId]: 5,\r",
+                  "            [product2.productId]: 5\r",
+                  "        };\r",
+                  "        orderRequest.shoppingCartDto.products = productMap;\r",
+                  "        const order = await api.addOrder(orderRequest)\r",
+                  "\r",
+                  "        pm.collectionVariables.set(\"order\", order);\r",
+                  "        const request = {\r",
+                  "            orderId : order.orderId,\r",
+                  "            products: productMap\r",
+                  "        };\r",
+                  "        \r",
+                  "        pm.request.body.update({\r",
+                  "            mode: 'raw',\r",
+                  "            raw: JSON.stringify(request),\r",
+                  "            options: { raw: { language: 'json' } }\r",
+                  "        });\r",
+                  "    } catch (err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => { }, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => {\r",
+                  "    try {\r",
+                  "        await main();\r",
+                  "    } catch (e) {\r",
+                  "        console.error(e);\r",
+                  "    } finally {\r",
+                  "        clearInterval(interval);\r",
+                  "    }\r",
+                  "},\r",
+                  "    100\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});\r",
+                  "\r",
+                  "const order = pm.collectionVariables.get(\"order\");\r",
+                  "\r",
+                  "pm.test(\"Проверка полей объекта Order\", function () {\r",
+                  "    const responseJson = pm.response.json();\r",
+                  "    pm.expect(responseJson.deliveryId).to.not.be.null;\r",
+                  "    pm.expect(responseJson.state).to.equal(\"CANCELED\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/order/return",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "order",
+                "return"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Получить список товаров пользователя",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        let product1 = rnd.getProductForWarehouse();\r",
+                  "        await api.addProductToWarehouse(product1);\r",
+                  "        const product1Quantity = Number(10);\r",
+                  "\r",
+                  "        await api.addQuantityToProductInWarehouse({\r",
+                  "            productId: product1.productId,\r",
+                  "            quantity: product1Quantity\r",
+                  "        });\r",
+                  "\r",
+                  "        let product2 = rnd.getProductForWarehouse();\r",
+                  "        await api.addProductToWarehouse(product2);\r",
+                  "        const product2Quantity = Number(10);\r",
+                  "\r",
+                  "        await api.addQuantityToProductInWarehouse({\r",
+                  "            productId: product2.productId,\r",
+                  "            quantity: product2Quantity\r",
+                  "        });\r",
+                  "\r",
+                  "        let orderRequest = rnd.getOrderRequest();\r",
+                  "        const productMap = {\r",
+                  "            [product1.productId]: 5,\r",
+                  "            [product2.productId]: 5\r",
+                  "        };\r",
+                  "        orderRequest.shoppingCartDto.products = productMap;\r",
+                  "\r",
+                  "        api.addOrder(orderRequest);\r",
+                  "        api.addOrder(orderRequest);\r",
+                  "        api.addOrder(orderRequest);\r",
+                  "\r",
+                  "    } catch (err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => { }, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => {\r",
+                  "    try {\r",
+                  "        await main();\r",
+                  "    } catch (e) {\r",
+                  "        console.error(e);\r",
+                  "    } finally {\r",
+                  "        clearInterval(interval);\r",
+                  "    }\r",
+                  "},\r",
+                  "    100\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Код ответа 200 или 201\", function () {\r",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Ожидается 3 элемента\", function () {\r",
+                  "    const jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.content.length).to.equal(3);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlForGateway}}/order?username=username&size=3",
+              "host": [
+                "{{baseUrlForGateway}}"
+              ],
+              "path": [
+                "order"
+              ],
+              "query": [
+                {
+                  "key": "username",
+                  "value": "username"
+                },
+                {
+                  "key": "size",
+                  "value": "3"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "requests": {},
+        "exec": [
+          "// Адрес Eureka",
+          "const eurekaHost = 'http://localhost:8761';",
+          "const appNames = [\"delivery\", \"order\", \"payment\", \"warehouse\", \"shopping-store\"];",
+          "",
+          "appNames.forEach((appName) => {",
+          "    pm.sendRequest({",
+          "        url: `${eurekaHost}/eureka/v2/apps/${appName}`,",
+          "        method: 'GET',",
+          "        header: {",
+          "            'Accept': 'application/xml'",
+          "        }",
+          "    }, function (err, res) {",
+          "        if (err) {",
+          "            console.log('Ошибка запроса к Eureka: ', err);",
+          "            return;",
+          "        }",
+          "",
+          "        if (res.code === 200) {",
+          "            let xmlText = res.text();",
+          "",
+          "            let portMatch = xmlText.match(/<port enabled=\"true\">(\\d+)<\\/port>/);",
+          "",
+          "            if (portMatch && portMatch[1]) {",
+          "                let port = portMatch[1];",
+          "                pm.collectionVariables.set(`${appName}-port`, `:${port}`);",
+          "                console.log(`${appName}-port установлен: :${port}`);",
+          "            } else {",
+          "                console.error(`Не удалось извлечь порт для ${appName}`);",
+          "            }",
+          "        } else {",
+          "            console.error('Не удалось получить данные из Eureka: статус ', res.status);",
+          "        }",
+          "    });",
+          "});",
+          "",
+          "API = class {",
+          "    constructor(postman, verbose = false, baseUrl = \"http://localhost:8080\") {",
+          "        this.baseUrl = baseUrl;",
+          "        this.pm = postman;",
+          "        this._verbose = verbose;",
+          "    }",
+          "",
+          "    async addProduct(product, verbose = null) {",
+          "        return this.put(\"/api/v1/shopping-store\", product, \"Ошибка при добавлении нового продукта: \", verbose);",
+          "    }",
+          "",
+          "    async addProductToWarehouse(product, verbose = null) {",
+          "        return this.put(\"/api/v1/warehouse\", product, \"Ошибка при добавлении нового продукта на склад: \", verbose);",
+          "    }",
+          "",
+          "    async addQuantityToProductInWarehouse(product, verbose = null) {",
+          "        return this.post(\"/api/v1/warehouse/add\", product, \"Ошибка при добавлении нового продукта на склад: \", verbose);",
+          "    }",
+          "",
+          "    async addDelivery(delivery, verbose = null) {",
+          "        return this.put(\"/api/v1/delivery\", delivery, \"Ошибка при добавлении новой доставки: \", verbose);",
+          "    }",
+          "",
+          "    async addPayment(payment, verbose = null) {",
+          "        return this.post(\"/api/v1/payment\", payment, \"Ошибка при добавлении новой платёжки: \", verbose);",
+          "    }",
+          "",
+          "    async addOrder(order, verbose = null) {",
+          "        return this.put(\"/api/v1/order\", order, \"Ошибка при добавлении нового заказа: \", verbose);",
+          "    }",
+          "",
+          "    async calculateDeliveryCost(order, verbose = null) {",
+          "        return this.post(\"/api/v1/order/calculate/delivery\", order, \"Ошибка при расчёте стоимости доставки заказа: \", verbose);",
+          "    }",
+          "",
+          "    async put(path, body = null, errorText = \"Ошибка при выполнении put-запроса: \", verbose = null) {",
+          "        return this.sendRequest(\"PUT\", path, body, errorText, verbose);",
+          "    }",
+          "",
+          "    async get(path, body = null, errorText = \"Ошибка при выполнении get-запроса: \", verbose = null) {",
+          "        return this.sendRequest(\"GET\", path, body, errorText, verbose);",
+          "    }",
+          "",
+          "    async post(path, body = null, errorText = \"Ошибка при выполнении post-запроса: \", verbose = null) {",
+          "        return this.sendRequest(\"POST\", path, body, errorText, verbose);",
+          "    }",
+          "",
+          "    async sendRequest(method, path, body = null, errorText = \"Ошибка при выполнении запроса: \", verbose = null) {",
+          "        return new Promise((resolve, reject) => {",
+          "            verbose = verbose == null ? this._verbose : verbose;",
+          "            var url;",
+          "            switch (path.split('/')[3].split('?')[0]) {",
+          "                case \"delivery\":",
+          "                    url = pm.collectionVariables.get(\"baseUrl\") + pm.collectionVariables.get(\"delivery-port\");",
+          "                    break;",
+          "                case \"order\":",
+          "                    url = pm.collectionVariables.get(\"baseUrl\") + pm.collectionVariables.get(\"order-port\");",
+          "                    break;",
+          "                case \"payment\":",
+          "                    url = pm.collectionVariables.get(\"baseUrl\") + pm.collectionVariables.get(\"payment-port\");",
+          "                    break;",
+          "                case \"warehouse\":",
+          "                    url = pm.collectionVariables.get(\"baseUrl\") + pm.collectionVariables.get(\"warehouse-port\");",
+          "                    break;",
+          "                case \"shopping-store\":",
+          "                    url = pm.collectionVariables.get(\"baseUrl\") + pm.collectionVariables.get(\"shopping-store-port\");",
+          "                    break;",
+          "",
+          "            }",
+          "            const request = {",
+          "                url: url + path,",
+          "                method: method,",
+          "                body: body == null ? \"\" : JSON.stringify(body),",
+          "                header: { \"Content-Type\": \"application/json\" },",
+          "            };",
+          "            if (verbose) {",
+          "                console.log(\"Отправляю запрос: \", request);",
+          "            }",
+          "",
+          "            try {",
+          "                this.pm.sendRequest(request, (error, response) => {",
+          "                    if (error || (response.code >= 400 && response.code <= 599)) {",
+          "                        let err = error ? error : JSON.stringify(response.json());",
+          "                        console.error(\"При выполнении запроса к серверу возникла ошика.\\n\", err,",
+          "                            \"\\nДля отладки проблемы повторите такой же запрос к вашей программе \" +",
+          "                            \"на локальном компьютере. Данные запроса:\\n\", JSON.stringify(request));",
+          "",
+          "                        reject(new Error(errorText + err));",
+          "                    }",
+          "                    if (verbose) {",
+          "                        console.log(\"Результат обработки запроса: код состояния - \", response.code, \", тело: \", response.json());",
+          "                    }",
+          "                    if (response.stream.length === 0) {",
+          "                        resolve(\"\");",
+          "                    } else {",
+          "                        resolve(response.json());",
+          "                    }",
+          "                });",
+          "",
+          "            } catch (err) {",
+          "                if (verbose) {",
+          "                    console.error(errorText, err);",
+          "                }",
+          "                return Promise.reject(err);",
+          "            }",
+          "        });",
+          "    }",
+          "}",
+          "",
+          "",
+          "RandomUtils = class {",
+          "    constructor() { }",
+          "",
+          "    getWord(length = 1) {",
+          "        let result = '';",
+          "        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+          "        const charactersLength = characters.length;",
+          "        let counter = 0;",
+          "        while (counter < length) {",
+          "            result += characters.charAt(Math.floor(Math.random() * charactersLength));",
+          "            counter += 1;",
+          "        }",
+          "        return result;",
+          "    }",
+          "",
+          "    getAddress() {",
+          "        var address = [\"ADDRESS_1\", \"ADDRESS_2\"][Math.floor(Math.random() * 2)]",
+          "        return {",
+          "            country: address,",
+          "            city: address,",
+          "            street: address,",
+          "            house: address,",
+          "            flat: address",
+          "        }",
+          "    }",
+          "",
+          "    getDelivery() {",
+          "        return {",
+          "            fromAddress: this.getAddress(),",
+          "            toAddress: this.getAddress(),",
+          "            orderId: pm.variables.replaceIn('{{$guid}}'),",
+          "            deliveryState: 'CREATED'",
+          "        }",
+          "    }",
+          "",
+          "    getProduct() {",
+          "        return {",
+          "            productName: this.getWord(15),",
+          "            description: this.getWord(50),",
+          "            imageSrc: this.getWord(5) + '/' + this.getWord(5) + '/' + this.getWord(5),",
+          "            quantityState: [\"ENDED\", \"FEW\", \"ENOUGH\", \"MANY\"][Math.floor(Math.random() * 4)],",
+          "            productState: [\"ACTIVE\", \"DEACTIVATE\"][Math.floor(Math.random() * 2)],",
+          "            productCategory: [\"LIGHTING\", \"CONTROL\", \"SENSORS\"][Math.floor(Math.random() * 3)],",
+          "            price: Number((Math.random() * (1000 - 7) + 7).toFixed(2))",
+          "        }",
+          "    }",
+          "",
+          "    getProductForWarehouse() {",
+          "        return {",
+          "            \"dimension\": {",
+          "                \"depth\": (Math.random() * (1000 - 7) + 7).toFixed(2),",
+          "                \"height\": (Math.random() * (1000 - 7) + 7).toFixed(2),",
+          "                \"width\": (Math.random() * (1000 - 7) + 7).toFixed(2)",
+          "            },",
+          "            \"productId\": pm.variables.replaceIn('{{$guid}}'),",
+          "            \"weight\": (Math.random() * (1000 - 7) + 7).toFixed(2),",
+          "            \"fragile\": pm.variables.replaceIn('{{$randomBoolean}}')",
+          "        }",
+          "    }",
+          "",
+          "    getOrder() {",
+          "        return {",
+          "            \"orderId\": pm.variables.replaceIn('{{$guid}}'),",
+          "            \"shoppingCartId\": pm.variables.replaceIn('{{$guid}}'),",
+          "            \"products\": {",
+          "                [pm.variables.replaceIn('{{$guid}}')]: 3,",
+          "                [pm.variables.replaceIn('{{$guid}}')]: 5,",
+          "                [pm.variables.replaceIn('{{$guid}}')]: 10",
+          "            },",
+          "            \"paymentId\": pm.variables.replaceIn('{{$guid}}'),",
+          "            \"deliveryId\": pm.variables.replaceIn('{{$guid}}'),",
+          "            \"state\": \"NEW\",",
+          "            \"deliveryWeight\": 50,",
+          "            \"deliveryVolume\": 30,",
+          "            \"fragile\": pm.variables.replaceIn('{{$randomBoolean}}'),",
+          "            \"totalPrice\": 160,",
+          "            \"deliveryPrice\": 50,",
+          "            \"productPrice\": 100",
+          "        }",
+          "    }",
+          "",
+          "    getOrderRequest() {",
+          "        return {",
+          "            shoppingCartDto: {",
+          "                shoppingCartId: pm.variables.replaceIn('{{$guid}}'),",
+          "                products: {",
+          "                    [pm.variables.replaceIn('{{$guid}}')]: 3,",
+          "                    [pm.variables.replaceIn('{{$guid}}')]: 5",
+          "                }",
+          "            },",
+          "             addressDto: this.getAddress()",
+          "        }",
+          "    }",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrlForGateway",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "baseUrl",
+      "value": "http://localhost"
+    },
+    {
+      "key": "delivery-port",
+      "value": ""
+    },
+    {
+      "key": "payment-port",
+      "value": ""
+    },
+    {
+      "key": "order-port",
+      "value": ""
+    },
+    {
+      "key": "warehouse-port",
+      "value": ""
+    },
+    {
+      "key": "shopping-store-port",
+      "value": ""
+    },
+    {
+      "key": "delivery",
+      "value": ""
+    },
+    {
+      "key": "order",
+      "value": ""
+    },
+    {
+      "key": "orderRequest",
+      "value": ""
+    },
+    {
+      "key": "product1",
+      "value": ""
+    },
+    {
+      "key": "product2",
+      "value": ""
+    },
+    {
+      "key": "product3",
+      "value": ""
+    }
+  ]
+}
